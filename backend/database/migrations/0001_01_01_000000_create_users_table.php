@@ -11,29 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Roles Table
+        // 1. Tabla de Roles
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique(); // 'admin', 'client'
             $table->timestamps();
         });
 
-        // 2. Users Table
+        // 2. Tabla de Usuarios
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('dni')->unique()->nullable(); // New DNI
+            $table->string('dni')->unique()->nullable();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable(); // New Phone
-            $table->text('address')->nullable(); // New Address
+            $table->string('phone')->nullable(); 
+            $table->text('address')->nullable(); 
             
-            // Foreign Key to Roles
+            // Clave Foránea a Roles
             $table->foreignId('role_id')->constrained()->onDelete('cascade');
             
-            // Login Security
-            $table->integer('login_attempts')->default(0); // New
-            $table->boolean('blocked')->default(false); // New
-            $table->timestamp('unblock_time')->nullable(); // New
+            // Seguridad de Inicio de Sesión
+            $table->integer('login_attempts')->default(0); 
+            $table->boolean('blocked')->default(false); 
+            $table->timestamp('unblock_time')->nullable(); 
 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 3. User Logs Table
+        // 3. Tabla de Logs de Usuario
         Schema::create('user_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');

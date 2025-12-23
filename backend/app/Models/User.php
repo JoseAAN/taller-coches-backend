@@ -18,12 +18,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'role_id', // Changed from 'role' string to FK
+        'role_id',
         'password',
         'id',
     ];
 
-    // Relationship with Role
+    // Relación con Rol
     public function role()
     {
         return $this->belongsTo(Role::class);

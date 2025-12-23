@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Vehicle Types (Turismo, SUV, etc.)
+        // Tipos de Vehículo (Turismo, SUV, etc.)
         Schema::create('vehicle_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Vehicles
+        // Vehículos
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
