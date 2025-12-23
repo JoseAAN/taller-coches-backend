@@ -3,17 +3,18 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
-class Cita extends Model
+class Pedido extends Model
 {
     protected $guarded = [];
 
-    // Relación: Una Cita tiene UNA Factura
+    // Relación: Un Pedido tiene UNA Factura
+    // Relación: Un Pedido tiene UNA Factura de Producto
     public function factura()
     {
-        return $this->morphOne(Factura::class, 'facturable');
+        return $this->hasOne(FacturaProducto::class);
     }
 
     public function user() {
     return $this->belongsTo(User::class);
     }
-}
+}   
