@@ -15,20 +15,25 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    // ¡ESTO ES LO QUE TE FALTA O ESTÁ INCOMPLETO!
     protected $fillable = [
         'name',
         'email',
+        'role_id', // Changed from 'role' string to FK
         'password',
         'id',
     ];
 
-    // ... aquí abajo siguen tus funciones pedidos() y citas() ...
-    public function pedidos() {
-        return $this->hasMany(Pedido::class);
+    // Relationship with Role
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 
-    public function citas() {
-        return $this->hasMany(Cita::class);
+    public function orders() {
+        return $this->hasMany(Order::class);
+    }
+
+    public function appointments() {
+        return $this->hasMany(Appointment::class);
     }
 }
