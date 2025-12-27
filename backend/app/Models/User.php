@@ -18,11 +18,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
         'role_id',
         'password',
-        'id',
     ];
 
     // Relación con Rol

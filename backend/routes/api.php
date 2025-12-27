@@ -4,9 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\UserController;
 
 // Public Routes
 Route::post('/login', [AuthController::class, 'login']);
+
+
 
 // Protected Routes (Sanctum)
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -23,4 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 //Esto es simplemente de prueba no es la ruta final
 Route::group(['prefix' => 'v1'], function() {
     Route::apiResource('products', ProductsController::class);
+    
+    // UserRegistration
+    Route::post('/users', [UserController::class, 'store']);
 });
