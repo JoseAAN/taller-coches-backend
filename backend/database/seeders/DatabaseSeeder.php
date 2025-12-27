@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@admin.com',
-            'password' => bcrypt('1234'), 
+            'password' => bcrypt('1234'),
             'role_id' => $adminRole->id, // Asignar ID
         ]);
 
@@ -32,6 +32,10 @@ class DatabaseSeeder extends Seeder
         User::factory(9)->create([
             'password' => bcrypt('1234'),
             'role_id' => $clientRole->id, // Asignar ID
+        ]);
+
+         $this->call([
+            ProductSeeder::class,
         ]);
     }
 }
