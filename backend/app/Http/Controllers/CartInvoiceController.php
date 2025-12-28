@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Models\CartInvoice;
 use Illuminate\Http\Request;
-use App\Http\Resources\ProductsResource;
-use App\Http\Resources\ProductsCollection;
+use App\Http\Resources\CartInvoiceResource;
+use App\Http\Resources\CartInvoiceCollection;
 
-class ProductsController extends Controller
+class CartInvoiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //Nos trae todos los productos que tenemos en la BD
-        $products = Product::all();
-        return new ProductsCollection($products);
+        $carts = CartInvoice::all();
+        return new CartInvoiceCollection($carts);
     }
 
     /**
@@ -30,10 +29,11 @@ class ProductsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(CartInvoice $cartinvoice)
     {
-        //Buscamos un producto con un ID enconcreto
-        return new ProductsResource($product);
+
+        //Buscamos una factura por el ID interno de la factura
+         return new CartInvoiceResource($cartinvoice);
     }
 
     /**

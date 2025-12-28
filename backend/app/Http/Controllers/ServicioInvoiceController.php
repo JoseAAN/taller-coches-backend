@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use Illuminate\Http\Request;
-use App\Http\Resources\ProductsResource;
-use App\Http\Resources\ProductsCollection;
 
-class ProductsController extends Controller
+class ServicioInvoiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //Nos trae todos los productos que tenemos en la BD
-        $products = Product::all();
-        return new ProductsCollection($products);
+        //
     }
 
     /**
@@ -30,10 +25,9 @@ class ProductsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(string $id)
     {
-        //Buscamos un producto con un ID enconcreto
-        return new ProductsResource($product);
+        //
     }
 
     /**

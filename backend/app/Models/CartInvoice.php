@@ -4,11 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Factura de productos
-class ProductInvoice extends Model
+class CartInvoice extends Model
 {
-
-    protected $guarded = [];
+     protected $guarded = [];
 
     public function order()
     {
