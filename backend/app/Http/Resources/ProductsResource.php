@@ -19,7 +19,8 @@ class ProductsResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'description' => $this->description,
-            'stock' => $this->stock
+            'stock' => $this->stock,
+            'categories' => $this->categories->pluck('name'), // Retorna solo los nombres de las categorías
         ];
     }
 }

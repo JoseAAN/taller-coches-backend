@@ -15,5 +15,18 @@ class Product extends Model
         'stock',
     ];
 
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'products_categories');
+    }
+
+    public function carts()
+    {
+        return $this->belongsToMany(Cart::class, 'carts_products')
+            ->using(CartProduct::class)
+            ->withPivot('quantity', 'priceInTime', 'totalPerProduct')
+            ->withTimestamps();
+    }
+
 
 }

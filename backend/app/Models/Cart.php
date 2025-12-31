@@ -19,14 +19,10 @@ class Cart extends Model
 
 	public function products()
 	{
-		return $this->belongsToMany(
-			Product::class,
-			'cart_product',
-			'cart_id',
-			'product_id'
-		)
-		->withPivot('quantity', 'unit_price')
-		->withTimestamps();
+		return $this->belongsToMany(Product::class, 'carts_products')
+            ->using(CartProduct::class)
+            ->withPivot('quantity', 'priceInTime', 'totalPerProduct')
+            ->withTimestamps();
 	}
 
     	public function user()

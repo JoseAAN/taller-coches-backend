@@ -13,6 +13,14 @@ class CategoriesSeeder extends Seeder
      */
     public function run(): void
     {
-        Category::factory()->count(10)->create();
+        // Categorías específicas
+        $categories = ['Limpieza', 'Aceites', 'Frenos', 'Suspensión', 'Motor'];
+        
+        foreach ($categories as $categoryName) {
+            Category::firstOrCreate(['name' => $categoryName]);
+        }
+
+        // Categorías aleatorias extra
+        Category::factory()->count(5)->create();
     }
 }

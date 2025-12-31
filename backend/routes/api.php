@@ -26,10 +26,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 //Esto es simplemente de prueba no es la ruta final
-Route::group(['prefix' => 'v1'], function() {
-    Route::apiResource('products', ProductsController::class);
-    Route::apiResource('cartinvoice', CartInvoiceController::class);
+// Rutas Públicas V1
+Route::prefix('v1')->group(function () {
+    // Productos: Lectura pública
+    Route::get('/products', [ProductsController::class, 'index']);
+    Route::get('/products/{product}', [ProductsController::class, 'show']);
 
-    // UserRegistration
+    // Registro de usuarios (Público)
     Route::post('/users', [UserController::class, 'store']);
+});
+
+// Rutas Protegidas V1 (Requieren Autenticación)
+Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+    
+    // Productos: Gestión (Admin debería ser validado aquí o en controlador)
+    Route::post('/products', [ProductsController::class, 'store']);
+    Route::put('/products/{product}', [ProductsController::class, 'update']);
+    Route::delete('/products/{product}', [ProductsController::class, 'destroy']);
+
+    // Carrito / Facturación
+    Route::apiResource('cartinvoice', CartInvoiceController::class);
 });

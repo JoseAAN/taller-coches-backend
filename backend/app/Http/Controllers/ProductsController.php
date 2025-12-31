@@ -12,10 +12,29 @@ class ProductsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //Nos trae todos los productos que tenemos en la BD
-        $products = Product::all();
+        $query = Product::with('categories');
+
+        // Filtrar por Categoría
+        if ($request->has('category_id')) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category_id);
+            });
+        }
+
+        // Búsqueda por texto (nombre o descripción)
+        if ($request->has('search')) {
+            $searchTerm = '%' . $request->search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                  ->orWhere('description', 'like', $searchTerm);
+            });
+        }
+
+        // Paginación de 6 elementos por página TODO: Tener en cuenta que esto es lo que se cambiara con las cookies
+        $products = $query->paginate(6);
+
         return new ProductsCollection($products);
     }
 
@@ -24,7 +43,27 @@ class ProductsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Verificación de Rol Admin in-situ
+        if ($request->user()->role->name !== 'admin') {
+            return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
+        }
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'categories' => 'array|exists:categories,id', // Array de IDs de categorías
+        ]);
+
+        $product = Product::create($validatedData);
+
+        if (isset($validatedData['categories'])) {
+            $product->categories()->attach($validatedData['categories']);
+        }
+
+        // Devolvemos el recurso recién creado
+        return new ProductsResource($product->load('categories'));
     }
 
     /**
@@ -32,23 +71,48 @@ class ProductsController extends Controller
      */
     public function show(Product $product)
     {
-        //Buscamos un producto con un ID enconcreto
-        return new ProductsResource($product);
+        return new ProductsResource($product->load('categories'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        // Verificación de Rol Admin in-situ
+        if ($request->user()->role->name !== 'admin') {
+            return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
+        }
+
+        $validatedData = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|numeric|min:0',
+            'stock' => 'sometimes|integer|min:0',
+            'categories' => 'array|exists:categories,id',
+        ]);
+
+        $product->update($validatedData);
+
+        if (isset($validatedData['categories'])) {
+            $product->categories()->sync($validatedData['categories']);
+        }
+
+        return new ProductsResource($product->load('categories'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, Product $product) 
+    // Nota: Añadimos Request para poder acceder al usuario si no usamos helpers
     {
-        //
+        // Verificación de Rol Admin in-situ
+        if ($request->user()->role->name !== 'admin') {
+            return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
+        }
+
+        $product->delete();
+        return response()->json(['message' => 'Product deleted successfully']);
     }
 }
