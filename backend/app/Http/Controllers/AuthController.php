@@ -24,20 +24,33 @@ class AuthController extends Controller
             ]);
         }
 
-        // Crear token (Sanctum)
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Generar token manual
+        $token = \Illuminate\Support\Str::random(60); 
+        
+        // Guardar token en base de datos
+        $user->forceFill([
+            'api_token' => $token, // Si se usa hash se debería hashear aquí
+        ])->save();
 
         return response()->json([
             'message' => 'Login exitoso',
-            'access_token' => $token,
+            'access_token' => $token, // Devolvemos el string puro
             'token_type' => 'Bearer',
-            'user' => $user->load('role'), // Devolver usuario con rol
+            'user' => $user->load('role'),
         ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // Invalidar token (Manual)
+        // Como no usamos Sanctum, dependemos de que el middleware haya inyectado el user,
+        // o buscamos al usuario por el token del header.
+        
+        $user = $request->user(); 
+        
+        if ($user) {
+            $user->forceFill(['api_token' => null])->save();
+        }
 
         return response()->json(['message' => 'Sesión cerrada correctamente']);
     }

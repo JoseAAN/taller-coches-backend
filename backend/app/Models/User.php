@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'role_id',
         'password',
+        'api_token', // Added manual token
     ];
 
     // Relación con Rol

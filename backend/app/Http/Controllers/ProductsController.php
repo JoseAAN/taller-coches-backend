@@ -43,10 +43,7 @@ class ProductsController extends Controller
      */
     public function store(Request $request)
     {
-        // Verificación de Rol Admin in-situ
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
-        }
+
 
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
@@ -79,10 +76,7 @@ class ProductsController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        // Verificación de Rol Admin in-situ
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
-        }
+
 
         $validatedData = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -107,10 +101,7 @@ class ProductsController extends Controller
     public function destroy(Request $request, Product $product) 
     // Nota: Añadimos Request para poder acceder al usuario si no usamos helpers
     {
-        // Verificación de Rol Admin in-situ
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
-        }
+
 
         $product->delete();
         return response()->json(['message' => 'Product deleted successfully']);
