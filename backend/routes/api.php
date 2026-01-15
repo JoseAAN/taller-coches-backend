@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\CartInvoiceController;
@@ -35,6 +36,10 @@ Route::prefix('v1')->group(function () {
 
     // Registro de usuarios (Público)
     Route::post('/users', [UserController::class, 'store']);
+
+    // All Carts
+    Route::get('/carts', [CartController::class, 'index']);
+    Route::get('/carts/{cart}', [CartController::class, 'show']);
 
     // Servicios: Lectura pública
     Route::get('/services', [ServiceController::class, 'index']);
