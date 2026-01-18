@@ -16,6 +16,8 @@ class ProductsController extends Controller
     {
         $query = Product::with('categories');
 
+        //TODO/ filtros: precio_min y precio_max
+
         // Filtrar por Categoría
         if ($request->has('category_id')) {
             $query->whereHas('categories', function ($q) use ($request) {

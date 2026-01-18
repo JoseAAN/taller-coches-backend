@@ -40,14 +40,19 @@ class CartController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        if ($request->user()->role->name !== 'admin') {
+            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
+        }
     }
-
+    
     /**
      * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    */
+    public function destroy(Request $request, string $id)
     {
+        if ($request->user()->role->name !== 'admin') {
+            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
+        }
         //
     }
 }
