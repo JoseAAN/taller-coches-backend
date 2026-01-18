@@ -24,7 +24,12 @@ class CartController extends Controller
      */
     public function store(Request $request)
     {
-        
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'price' => 'required|numeric',
+        ]);
+        $cart = Cart::create($data);
+        return new CartResource($cart);
     }
 
     /**
@@ -43,16 +48,38 @@ class CartController extends Controller
         if ($request->user()->role->name !== 'admin') {
             return response()->json(['message' => 'No tienes permiso de administrador'], 403);
         }
+
+        $data = $request->validate([
+            'user_id' => 'sometimes|exists:users,id',
+            'price' => 'sometimes|numeric',
+        ]);
+
+        $cart = Cart::find($id);
+
+        if (!$cart) {
+            return response()->json(['message' => 'Carrito no encontrado'], 404);
+        }
+
+        $cart->update($data);
+        return new CartResource($cart);
     }
     
     /**
      * Remove the specified resource from storage.
     */
-    public function destroy(Request $request, string $id)
+    public function destroy(Request $request, int $id)
     {
         if ($request->user()->role->name !== 'admin') {
             return response()->json(['message' => 'No tienes permiso de administrador'], 403);
         }
+        $cart = Cart::find($id);
+
+        if (!$cart) {
+            return response()->json(['message' => 'Carrito no encontrado'], 404);
+        }
+        
+        $cart->delete();
+        return response()->json(['message' => 'Carrito eliminado correctamente'], 200);
         //
     }
 }

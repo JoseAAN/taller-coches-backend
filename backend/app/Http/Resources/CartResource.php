@@ -15,26 +15,11 @@ class CartResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        //Se podría personalizar para que el json quede más completo, de momento lo dejo con los campos propios de la BD
         return [
             'id' => $this->id,
-            'subtotal' => $this->price,
-            //Mapeamos los productos para aclarar el json que devuelve
-            'products' => $this->products->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'description' => $product->description,
-                    'price' => $product->price,
-                    'quantity' => $product->pivot->quantity,
-                    'priceInTime' => $product->pivot->priceInTime,
-                    'totalPerProduct' => $product->pivot->totalPerProduct,
-                ];
-            }),
-            'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-            ],
+            'user_id' => $this->user_id,
+            'price' => $this->price,
         ];
     }
 }

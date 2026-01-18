@@ -37,13 +37,13 @@ Route::prefix('v1')->group(function () {
     // Registro de usuarios (Público)
     Route::post('/users', [UserController::class, 'store']);
 
-    // All Carts
-    Route::get('/carts', [CartController::class, 'index']);
-    Route::get('/carts/{cart}', [CartController::class, 'show']);
-
     // Servicios: Lectura pública
     Route::get('/services', [ServiceController::class, 'index']);
     Route::get('/services/{service}', [ServiceController::class, 'show']);
+
+    // Carts público
+    Route::get('/carts', [CartController::class, 'index']);
+    Route::get('/carts/{cart}', [CartController::class, 'show']);
 });
 
 // Rutas Protegidas V1 (General)
@@ -63,4 +63,9 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/services', [ServiceController::class, 'store']);
     Route::put('/services/{service}', [ServiceController::class, 'update']);
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
+
+    // Carts: Gestión
+    Route::post('/carts', [CartController::class, 'store']);
+    Route::put('/carts/{cart}', [CartController::class, 'update']);
+    Route::delete('/carts/{cart}', [CartController::class, 'destroy']);
 });
