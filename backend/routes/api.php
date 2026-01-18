@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\CartInvoiceController;
+use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ServiceController;
 
 
@@ -44,6 +45,9 @@ Route::prefix('v1')->group(function () {
     // Carts público
     Route::get('/carts', [CartController::class, 'index']);
     Route::get('/carts/{cart}', [CartController::class, 'show']);
+
+    // Facturas de productos público
+    Route::get('/product-invoices', [ProductInvoiceController::class, 'index']);
 });
 
 // Rutas Protegidas V1 (General)
@@ -68,4 +72,9 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/carts', [CartController::class, 'store']);
     Route::put('/carts/{cart}', [CartController::class, 'update']);
     Route::delete('/carts/{cart}', [CartController::class, 'destroy']);
+
+    // Facturas de productos: Gestión
+    Route::post('/product-invoices', [ProductInvoiceController::class, 'store']);
+    Route::put('/product-invoices/{id}', [ProductInvoiceController::class, 'update']);
+    Route::delete('/product-invoices/{id}', [ProductInvoiceController::class, 'destroy']);
 });

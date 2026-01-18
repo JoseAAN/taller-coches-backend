@@ -29,11 +29,23 @@ return new class extends Migration
             
             $table->timestamps();
         });
+
+        // Facturas de Producto
+        Schema::create('product_invoices', function (Blueprint $table) {
+            $table->id();
+            $table->string('invoice_number');
+            $table->decimal('total', 8, 2);
+            $table->foreignId('cart_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        
     }
 
     public function down(): void
     {
         Schema::dropIfExists('cart_invoices');
         Schema::dropIfExists('service_invoices');
+        Schema::dropIfExists('product_invoices');
     }
 };
