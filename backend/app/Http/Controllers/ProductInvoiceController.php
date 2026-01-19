@@ -22,9 +22,15 @@ class ProductInvoiceController extends Controller
             $query->where('invoice_number', 'like', $searchTerm);
         }
 
-        $productInvoices = $query->paginate(10);
+        // TODO: Sorts con nomrbes personalizados
+        //Esto tengo que darle una vuelta para que allowedSorts tenga nombres personalizados y no los que vienen de la BD
+        $this->sort(
+            $query,
+            $request,
+            ['created_at', 'invoice_number', 'total']
+        );
 
-        return new ProductInvoiceCollection($productInvoices);
+        return new ProductInvoiceCollection($query->paginate(10));
     }
 
     /**
@@ -94,4 +100,16 @@ class ProductInvoiceController extends Controller
         $productInvoice->delete();
         return response()->json(['message' => 'Factura de producto eliminada correctamente']);
     }
+
+    private function sort($query, Request $request, array $allowedSorts, string $defaultSort = 'created_at', string $defaultOrder = 'desc'){
+        $sortBy = $request->get('sort_by', $defaultSort);
+        $sortOrder = $request->get('sort_order', $defaultOrder);
+
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = $defaultSort;
+        }
+
+        return $query->orderBy($sortBy, $sortOrder);
+    }
+
 }
