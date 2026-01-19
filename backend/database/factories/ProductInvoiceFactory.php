@@ -18,7 +18,7 @@ class ProductInvoiceFactory extends Factory
     public function definition(): array
     {
         return [
-            'invoice_number' => $this->faker->unique()->numerify('INV-#####'),
+            'invoice_number' => 'PINV-' . $this->faker->unique()->numerify('#####'),
             'total' => $this->faker->randomFloat(2, 10, 1000),
             'cart_id' => Cart::factory(),
         ];

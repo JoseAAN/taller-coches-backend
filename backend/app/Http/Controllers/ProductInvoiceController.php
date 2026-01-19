@@ -40,11 +40,21 @@ class ProductInvoiceController extends Controller
     {
         //
         $data = $request->validate([
-            'invoice_number' => 'required|string|unique:product_invoices,invoice_number',
             'total' => 'required|numeric',
             'cart_id' => 'required|exists:carts,id',
         ]);
+
+        
         $productInvoice = ProductInvoice::create($data);
+
+        //VAlidación de formato de invoice_number
+        $formatCheck = $this->validateInvoiceFormat($productInvoice->invoice_number);
+        if (!$formatCheck['valid']) {
+            return response()->json([
+                'message' => $formatCheck['message']
+            ], 403);
+        }
+
         return new ProductInvoiceResource($productInvoice);
     }
 
@@ -55,7 +65,7 @@ class ProductInvoiceController extends Controller
     {
         $productInvoice = ProductInvoice::with('cart')->find($id);
         if (!$productInvoice) {
-            return response()->json(['message' => 'Factura de producto no encontrada'], 404);
+            return response()->json(['message' => 'Factura de producto no encontrada'], 403);
         }
         return new ProductInvoiceResource($productInvoice);
     }
@@ -110,6 +120,23 @@ class ProductInvoiceController extends Controller
         }
 
         return $query->orderBy($sortBy, $sortOrder);
+    }
+
+    private function validateInvoiceFormat(string $invoiceNumber){
+        //Patron: PINV-XXXX
+        $pattern = '/^PINV-\d{5}$/';
+
+        if (!preg_match($pattern, $invoiceNumber)) {
+            return [
+                'valid' => false,
+                'message' => 'El número de factura debe tener el formato PINV-XXXXX'
+            ];
+        }
+
+        return [
+            'valid' => true,
+            'message' => ''
+        ];
     }
 
 }
