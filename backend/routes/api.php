@@ -10,6 +10,8 @@ use App\Http\Controllers\CartInvoiceController;
 use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceInvoiceController;
+use App\Http\Controllers\AppointmentController;
+
 
 // Rutas Públicas
 Route::post('/login', [AuthController::class, 'login']);
@@ -60,9 +62,21 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth.token'])->prefix('v1')->group(function () {
         // Carrito / Facturación
         Route::apiResource('cartinvoice', CartInvoiceController::class);
-        });
         
         // Rutas Protegidas V1 (Admin)
+
+    // Citas
+    Route::get('/appointment', [AppointmentController::class, 'index']);
+     Route::post('/appointment', [AppointmentController::class, 'store']);
+});
+
+// Rutas Protegidas V1 (General)
+Route::middleware(['auth.token'])->prefix('v1')->group(function () {
+    // Carrito / Facturación
+    Route::apiResource('cartinvoice', CartInvoiceController::class);
+});
+
+// Rutas Protegidas V1 (Admin)
 Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function () {
     // Productos: Gestión
     Route::post('/products', [ProductsController::class, 'store']);
