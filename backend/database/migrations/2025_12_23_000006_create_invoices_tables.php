@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('invoice_number');
             $table->decimal('total', 8, 2);
             // Relación con Cita (1:1)
-            $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
+            $table->foreignId('appointment_id')->nullable()->constrained()->onDelete('cascade');
             
             $table->timestamps();
         });

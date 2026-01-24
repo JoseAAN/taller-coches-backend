@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ServiceInvoice>
  */
-class ServicieInvoiceFactory extends Factory
+class ServiceInvoiceFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,7 +17,8 @@ class ServicieInvoiceFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'invoice_number' => 'SINV-' . $this->faker->unique()->numerify('#####'),
+            'total' => $this->faker->randomFloat(2, 10, 1000),
         ];
     }
 }

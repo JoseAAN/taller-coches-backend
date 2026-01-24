@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ProductInvoiceCollection;
-use App\Http\Resources\ProductInvoiceResource;
-use App\Models\ProductInvoice;
+use App\interfaces\Sorter;
 use Illuminate\Http\Request;
+use App\Models\ProductInvoice;
+use App\Http\Resources\ProductInvoiceResource;
+use App\Http\Resources\ProductInvoiceCollection;
+use App\Interfaces\CheckInvoiceFormat;
 
-class ProductInvoiceController extends Controller
+class ProductInvoiceController extends Controller implements Sorter, CheckInvoiceFormat
 {
     /**
      * Display a listing of the resource.
@@ -79,7 +81,7 @@ class ProductInvoiceController extends Controller
             return response()->json(['message' => 'No tienes permiso de administrador'], 403);
         }
 
-        $data = $request->validate([
+        $data = $request->validate ([
             'invoice_number' => 'sometimes|string|unique:product_invoices,invoice_number,' . $id,
             'total' => 'sometimes|numeric',
             'cart_id' => 'sometimes|exists:carts,id',
@@ -111,7 +113,7 @@ class ProductInvoiceController extends Controller
         return response()->json(['message' => 'Factura de producto eliminada correctamente']);
     }
 
-    private function sort($query, Request $request, array $allowedSorts, string $defaultSort = 'created_at', string $defaultOrder = 'desc'){
+    public function sort($query, Request $request, array $allowedSorts, string $defaultSort = 'created_at', string $defaultOrder = 'desc'){
         $sortBy = $request->get('sort_by', $defaultSort);
         $sortOrder = $request->get('sort_order', $defaultOrder);
 
@@ -122,7 +124,7 @@ class ProductInvoiceController extends Controller
         return $query->orderBy($sortBy, $sortOrder);
     }
 
-    private function validateInvoiceFormat(string $invoiceNumber){
+    public function validateInvoiceFormat(string $invoiceNumber){
         //Patron: PINV-XXXX
         $pattern = '/^PINV-\d{5}$/';
 

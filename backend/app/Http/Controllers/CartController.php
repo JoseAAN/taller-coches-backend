@@ -24,6 +24,7 @@ class CartController extends Controller
      */
     public function store(Request $request)
     {
+        //Añadir verificación de admin
         $data = $request->validate([
             'user_id' => 'required|exists:users,id',
             'price' => 'required|numeric',
@@ -45,6 +46,7 @@ class CartController extends Controller
      */
     public function update(Request $request, string $id)
     {
+
         if ($request->user()->role->name !== 'admin') {
             return response()->json(['message' => 'No tienes permiso de administrador'], 403);
         }
