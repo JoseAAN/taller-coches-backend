@@ -9,12 +9,12 @@ return new class extends Migration
     public function up() {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-        
-            $table->foreignId('vehicle_id')->constrained()->onDelete('cascade'); 
+
+            $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
             $table->foreignId('service_id')->constrained()->onDelete('cascade');
-            
+            $table->dateTime('end_time')->after('appointment_date');
             $table->dateTime('appointment_date');
-            $table->decimal('final_price', 10, 2)->nullable(); 
+            $table->decimal('final_price', 10, 2)->nullable();
             $table->timestamps();
         });
     }

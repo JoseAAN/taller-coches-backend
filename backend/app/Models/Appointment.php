@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    protected $fillable = [
+        'vehicle_id',
+        'service_id',
+        'appointment_date',
+        'final_price'
+    ];
+
+    protected $casts = [
+        'appointment_date' => 'datetime',
+    ];
+
     protected $guarded = [];
 
     // Relacion con la factura de servicios

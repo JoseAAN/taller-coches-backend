@@ -15,7 +15,7 @@ class CartController extends Controller
      */
     public function index()
     {
-        $carts = Cart::with('products')->get(); 
+        $carts = Cart::with('products')->get();
         return new CartCollection($carts);
     }
 
@@ -63,7 +63,7 @@ class CartController extends Controller
         $cart->update($data);
         return new CartResource($cart);
     }
-    
+
     /**
      * Remove the specified resource from storage.
     */
@@ -77,7 +77,7 @@ class CartController extends Controller
         if (!$cart) {
             return response()->json(['message' => 'Carrito no encontrado'], 404);
         }
-        
+
         $cart->delete();
         return response()->json(['message' => 'Carrito eliminado correctamente'], 200);
         //

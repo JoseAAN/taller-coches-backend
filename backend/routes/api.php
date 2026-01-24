@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\CartInvoiceController;
 use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\AppointmentController;
 
 
 // Rutas Públicas
@@ -48,6 +49,10 @@ Route::prefix('v1')->group(function () {
 
     // Facturas de productos público
     Route::get('/product-invoices', [ProductInvoiceController::class, 'index']);
+
+    // Citas
+    Route::get('/appointment', [AppointmentController::class, 'index']);
+     Route::post('/appointment', [AppointmentController::class, 'store']);
 });
 
 // Rutas Protegidas V1 (General)
