@@ -10,6 +10,7 @@ class Appointment extends Model
         'vehicle_id',
         'service_id',
         'appointment_date',
+        'end_time',
         'final_price'
     ];
 

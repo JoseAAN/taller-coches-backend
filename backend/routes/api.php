@@ -52,7 +52,8 @@ Route::prefix('v1')->group(function () {
 
     // Citas
     Route::get('/appointment', [AppointmentController::class, 'index']);
-     Route::post('/appointment', [AppointmentController::class, 'store']);
+    Route::post('/appointment', [AppointmentController::class, 'store']);
+    Route::delete('/appointment/{appointment}', [AppointmentController::class, 'destroy']);
 });
 
 // Rutas Protegidas V1 (General)

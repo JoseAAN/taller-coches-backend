@@ -12,8 +12,8 @@ return new class extends Migration
 
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
             $table->foreignId('service_id')->constrained()->onDelete('cascade');
-            $table->dateTime('end_time')->after('appointment_date');
             $table->dateTime('appointment_date');
+            $table->dateTime('end_time');
             $table->decimal('final_price', 10, 2)->nullable();
             $table->timestamps();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,92 +18,120 @@ class AppointmentController extends Controller
     public function index(Request $request)
     {
         $request->validate([
+            'service_id' => 'required',
             'date' => 'required|date_format:Y-m-d',
         ]);
 
-        //Horario laboral
-        $timeStart= 8;
-        $endTime = 21;
+        //Duracion del Servicio Solicitado
+        $service = Service::findOrFail($request->service_id);
+        $durationMinutes = $service->average_duration;
 
-        //Horas ocupadas
-        $hoursBusy = Appointment::whereDate('appointment_date', $request->date)
-                            ->get()
-                            ->map(function ($cita) {
-                                // hora en formato H:i (ej:09:00)
-                                return $cita->appointment_date->format('H:i');
-                            })
-                            ->toArray();
+        //Cogemos el Dia solicitado y desde las 8am hasta las 9pm
+        $workStart = Carbon::parse($request->date . ' 08:00:00');
+        $workEnd   = Carbon::parse($request->date . ' 21:00:00');
 
-            for ($i = $timeStart; $i < $endTime; $i++) {
-            // Creamos la hora ejemplo 08:00
-            $timeString = Carbon::createFromTime($i, 0)->format('H:i');
+        //Intervalo de tiempo por si se atrasa un servicio
+        $stepMinutes = 10;
 
-            // Verificamos si esta hora está en la lista de ocupadas
-            $isBusy = in_array($timeString, $hoursBusy);
+        //Calculamos las horas que tenemos ocupadas en ese dia
+        $appointments = Appointment::whereDate('appointment_date', $request->date)
+            ->get()
+            ->map(function ($appointment) {
+                return [
+                    'start' => Carbon::parse($appointment->appointment_date),
+                    'end'   => Carbon::parse($appointment->end_time),
+                ];
+            });
 
-            $Appointment[] = [
-                'time' => $timeString,
-                'status' => $isBusy ? 'ocupado' : 'disponible', //Esto es para usarlo en la vista
-                'display' => $i . ':00 - ' . ($i+1) . ':00'
-            ];
+        $availableSlots = [];
+
+        //Inicio de la jornada laboral
+        $current = $workStart;
+
+        // Mientras el servicio es decir (inicio + duración del servicio)
+        // no se pase de la hora de cierre 21:00
+        while ($current->copy()->addMinutes($durationMinutes)->lte($workEnd)) {
+
+            //La hora que de inicio del servicio y la hora que acabaria el servicio
+            $slotStart = $current->copy();
+            $slotEnd   = $current->copy()->addMinutes($durationMinutes);
+
+            $overlaps = false;
+            //Recorremos todas las citas de ese dia y comprobemoas si hay citas que choquen con el intervalo es decir
+            //si hay citas que empiecen antes de que acabe el servicio o que acaben despues de que empiece el servicio
+            foreach ($appointments as $appointment) {
+                if ($slotStart->lt($appointment['end']) && $slotEnd->gt($appointment['start'])
+                ) {
+                    $overlaps = true;
+                    break;
+                }
+            }
+
+            if (! $overlaps) {
+                //Guardamos los huecos disponibles
+                $availableSlots[] = [
+                'start' => $slotStart->format('H:i'),
+                'end'   => $slotEnd->format('H:i'),
+                ];
+            }
+
+            //Sumo 10 minutos para comprobar el siguiente hueco
+            $current->addMinutes($stepMinutes);
         }
 
         return response()->json([
-            'date' =>$request->date,
-            'CitesDay' => $Appointment
+            'date' => $request->date,
+            'service_duration' => $durationMinutes,
+            'available_slots' => $availableSlots,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    //Todo: Falta añadir dependiendo del servicio y del tipo de coche que sea tendra un precio u otro
     public function store(Request $request)
     {
         $validateCite = $request->validate([
             'vehicle_id' => 'required',
             'service_id' => 'required',
             'date' => 'required|date_format:Y-m-d',
-            'time' => 'required|date_format:H:i'// Ej: 10:00
+            'start_time' => 'required|date_format:H:i'// Ej: 10:00
         ]);
 
         //Obtenemos la duracion del servicio
         $service = Service::findOrFail($request->service_id);
-        $minutes = $service->average_duration;
-        $servicePrice = $service->price;
+        $durationMinutes = $service->average_duration;
 
-        //Obtenemos cuando empieza y cuando deberia de acabar el servicio
-        $startTime = Carbon::parse($request->date . ' ' . $request->time);
-        $endTime   = $startTime->copy()->addMinutes($minutes);
+        // Construimos DateTime completos el dia y la hora de inicio
+        $start = Carbon::parse(
+            $request->appointment_date . ' ' . $request->start_time
+        );
 
-
-        //Verificamos si ya hay una cita que choque con ese intervalo de tiempo, es decir como cada servicio tiene un tiempo estipulado diferente hay que comprobar todos los espacios de tiempo
-        $conflict = Appointment::where(function ($query) use ($startTime, $endTime) {
-        $query->whereBetween('appointment_date', [$startTime, $endTime])
-              ->orWhereBetween('end_time', [$startTime, $endTime])
-              ->orWhere(function ($q) use ($startTime, $endTime) {
-                  $q->where('appointment_date', '<', $startTime)
-                    ->where('end_time', '>', $endTime);
-              });
+        $end = $start->copy()->addMinutes($durationMinutes);
+        // Comprobamos solapamiento
+        $exists = Appointment::where(function ($q) use ($start, $end) {
+            $q->where('appointment_date', '<', $end)
+            ->where('end_time', '>', $start);
         })->exists();
 
-        if ($conflict) {
-            return response()->json(['error' => 'Ese hueco ya no está disponible para la duración de este servicio'], 409);
+        if ($exists) {
+            return response()->json([
+                'message' => 'Ese horario ya no está disponible'
+            ], 409);
         }
 
-        $cite = Appointment::create([
-        'vehicle_id'       => $validateCite ['vehicle_id'],
-        'service_id'       => $validateCite ['service_id'],
-        'appointment_date' => $startTime,
-        'end_time'         => $endTime,
-        'final_price'      => $precioFinal
+        $appointment = Appointment::create([
+            'vehicle_id' => $request->vehicle_id,
+            'service_id' => $service->id,
+            'appointment_date' => $start,
+            'end_time' => $end,
+            'final_price' => $service->price,
         ]);
 
-        return response()->json(
-            $cita,
-            ['message' => 'Su cita fue agendada'],
-            201
-        );
+        return response()->json([
+            'message' => 'Cita creada correctamente',
+            'appointment' => $appointment,
+        ], 201);
     }
 
     /**
@@ -124,8 +153,11 @@ class AppointmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Appointment $appointment)
     {
-        //
+        $appointment->delete();
+        return response()->json([
+            'message' => 'Cita eliminada con éxito'
+        ]);
     }
 }
