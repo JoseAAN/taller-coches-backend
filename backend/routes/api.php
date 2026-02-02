@@ -5,12 +5,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProductsController;
-use App\Http\Controllers\CartInvoiceController;
-use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\ServiceInvoiceController;
+use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\CartInvoiceController;
+use App\Http\Controllers\CartProductController;
+use App\Http\Controllers\ProductInvoiceController;
+use App\Http\Controllers\ServiceInvoiceController;
 
 
 // Rutas Públicas
@@ -62,6 +63,10 @@ Route::prefix('v1')->group(function () {
     Route::put('/appointment/{appointmentId}', [AppointmentController::class, 'update']);
     Route::delete('/appointment/{appointmentId}', [AppointmentController::class, 'destroy']);
     Route::get('/appointment/{appointmentId}', [AppointmentController::class, 'show']);
+    // Cart Poducts público
+    Route::get('/cart-products', [CartProductController::class, 'index']);
+    Route::get('/cart-products/{id}', [CartProductController::class, 'show']);
+
     });
 
     // Rutas Protegidas V1 (General)
@@ -105,5 +110,10 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/service-invoices', [ServiceInvoiceController::class, 'store']);
     Route::put('/service-invoices/{id}', [ServiceInvoiceController::class, 'update']);
     Route::delete('/service-invoices/{id}', [ServiceInvoiceController::class, 'destroy']);
+
+    // Cart Products: Gestión
+    Route::post('/cart-products', [CartProductController::class, 'store']);
+    Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
+    Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
 
 });
