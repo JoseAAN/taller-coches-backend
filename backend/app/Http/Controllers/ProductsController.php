@@ -100,7 +100,7 @@ class ProductsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, Product $product) 
+    public function destroy(Request $request, Product $product)
     // Nota: Añadimos Request para poder acceder al usuario si no usamos helpers
     {
 

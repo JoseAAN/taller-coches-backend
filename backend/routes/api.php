@@ -51,26 +51,27 @@ Route::prefix('v1')->group(function () {
     // Facturas de productos público
     Route::get('/product-invoices', [ProductInvoiceController::class, 'index']);
     Route::get('/product-invoices/{id}', [ProductInvoiceController::class, 'show']);
-    
+
     // Facturas de servicios público
     Route::get('/service-invoices', [ServiceInvoiceController::class, 'index']);
     Route::get('/service-invoices/{id}', [ServiceInvoiceController::class, 'show']);
-    
+
+     // Citas
+    Route::get('/appointment', [AppointmentController::class, 'index']);
+    Route::post('/appointment', [AppointmentController::class, 'store']);
+    Route::put('/appointment/{appointmentId}', [AppointmentController::class, 'update']);
+    Route::delete('/appointment/{appointmentId}', [AppointmentController::class, 'destroy']);
+    Route::get('/appointment/{appointmentId}', [AppointmentController::class, 'show']);
     });
-    
+
     // Rutas Protegidas V1 (General)
     Route::middleware(['auth.token'])->prefix('v1')->group(function () {
         // Carrito / Facturación
         Route::apiResource('cartinvoice', CartInvoiceController::class);
-        
+
         // Rutas Protegidas V1 (Admin)
 
-    // Citas
-    Route::get('/appointment', [AppointmentController::class, 'index']);
-    Route::post('/appointment', [AppointmentController::class, 'store']);
-    Route::delete('/appointment/{appointment}', [AppointmentController::class, 'destroy']);
 });
-
 // Rutas Protegidas V1 (General)
 Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     // Carrito / Facturación
@@ -83,27 +84,26 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/products', [ProductsController::class, 'store']);
     Route::put('/products/{product}', [ProductsController::class, 'update']);
     Route::delete('/products/{product}', [ProductsController::class, 'destroy']);
-    
+
     // Servicios: Gestión
     Route::post('/services', [ServiceController::class, 'store']);
     Route::put('/services/{service}', [ServiceController::class, 'update']);
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
-    
+
     // Carts: Gestión
     Route::post('/carts', [CartController::class, 'store']);
     Route::put('/carts/{cart}', [CartController::class, 'update']);
     Route::delete('/carts/{cart}', [CartController::class, 'destroy']);
-    
-    
+
+
     // Facturas de productos: Gestión
     Route::post('/product-invoices', [ProductInvoiceController::class, 'store']);
     Route::put('/product-invoices/{id}', [ProductInvoiceController::class, 'update']);
     Route::delete('/product-invoices/{id}', [ProductInvoiceController::class, 'destroy']);
-    
+
     //Facturas de servicios: Gestión
     Route::post('/service-invoices', [ServiceInvoiceController::class, 'store']);
     Route::put('/service-invoices/{id}', [ServiceInvoiceController::class, 'update']);
     Route::delete('/service-invoices/{id}', [ServiceInvoiceController::class, 'destroy']);
 
 });
-    

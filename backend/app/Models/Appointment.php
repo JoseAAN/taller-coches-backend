@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
@@ -11,14 +12,20 @@ class Appointment extends Model
         'service_id',
         'appointment_date',
         'end_time',
-        'final_price'
+        'final_price',
     ];
 
     protected $casts = [
         'appointment_date' => 'datetime',
+        'end_time' => 'datetime',
     ];
 
     protected $guarded = [];
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
 
     // Relacion con la factura de servicios
     public function invoice()
@@ -27,7 +34,8 @@ class Appointment extends Model
     }
 
     // Relacion con el usuario
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }
