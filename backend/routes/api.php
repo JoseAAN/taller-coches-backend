@@ -12,6 +12,7 @@ use App\Http\Controllers\CartInvoiceController;
 use App\Http\Controllers\CartProductController;
 use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ServiceInvoiceController;
+use App\Http\Controllers\AdminNavigationItemController;
 
 
 // Rutas Públicas
@@ -67,6 +68,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/cart-products', [CartProductController::class, 'index']);
     Route::get('/cart-products/{id}', [CartProductController::class, 'show']);
 
+    // Admin Navigation Items
+    Route::get('/admin-navigation', [AdminNavigationItemController::class, 'getSidenav']);
+
+    
     });
 
     // Rutas Protegidas V1 (General)
