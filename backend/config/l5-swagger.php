@@ -23,8 +23,8 @@ return [
                 /* * CORRECCIÓN: Comentamos la línea de controladores para evitar el error.
                  * Ahora solo escaneará la carpeta Docs.
                  */
-                // base_path('app/Http/Controllers'), 
-                
+                // base_path('app/Http/Controllers'),
+
                 base_path('app/Http/Docs'),
 
                 /*
@@ -51,7 +51,7 @@ return [
                  * Absolute paths to directory containing the swagger annotations are stored.
                  */
                 'annotations' => [
-                    base_path('app/Http/Docs'),
+                    base_path('app/Http/Controllers'),
                 ],
             ],
         ],

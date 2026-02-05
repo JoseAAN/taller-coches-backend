@@ -1,0 +1,255 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Taller",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor Local"
+        }
+    ],
+    "paths": {
+        "/api/appointments": {
+            "get": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Consultar disponibilidad de huecos",
+                "description": "Calcula los intervalos de tiempo libres para un servicio basándose en su duración y las citas ya existentes.",
+                "operationId": "09fd012ab97514481bde57bbeac2699b",
+                "parameters": [
+                    {
+                        "name": "service_id",
+                        "in": "query",
+                        "description": "ID del servicio para obtener su duración media",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Fecha a consultar (formato YYYY-MM-DD)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de huecos disponibles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "date": {
+                                            "type": "string",
+                                            "example": "2026-05-15"
+                                        },
+                                        "service_duration": {
+                                            "type": "integer",
+                                            "example": 45
+                                        },
+                                        "available_slots": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "start": {
+                                                        "type": "string",
+                                                        "example": "09:00"
+                                                    },
+                                                    "end": {
+                                                        "type": "string",
+                                                        "example": "09:45"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación en los parámetros"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Registrar una nueva cita",
+                "description": "Store a newly created resource in storage.",
+                "operationId": "15017f04a457b26e2a870c8a011a407a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vehicle_id",
+                                    "service_id",
+                                    "date",
+                                    "start_time"
+                                ],
+                                "properties": {
+                                    "vehicle_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "service_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-15"
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "10:30"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cita creada correctamente"
+                    },
+                    "409": {
+                        "description": "El horario ya está ocupado"
+                    },
+                    "500": {
+                        "description": "Error interno"
+                    }
+                }
+            }
+        },
+        "/api/appointments/{id}": {
+            "get": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Obtener detalle de una cita específica",
+                "description": "Display the specified resource.",
+                "operationId": "13b46cd03a1dae29a4c4dd6e756d37da",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalle de la cita"
+                    },
+                    "404": {
+                        "description": "Cita no encontrada"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Actualizar una cita",
+                "description": "Update the specified resource in storage.",
+                "operationId": "a779a3a6175fee8a68b75461718a1ec3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "vehicle_id": {
+                                        "type": "integer"
+                                    },
+                                    "service_id": {
+                                        "type": "integer"
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "start_time": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cita actualizada"
+                    },
+                    "409": {
+                        "description": "Conflicto de horario"
+                    },
+                    "422": {
+                        "description": "Horario fuera de jornada laboral"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Eliminar una cita del sistema",
+                "description": "Remove the specified resource from storage.",
+                "operationId": "cc5727c249d22f6719923c09625213e0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cita eliminada correctamente"
+                    },
+                    "404": {
+                        "description": "Cita no encontrada"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Citas",
+            "description": "Gestión de citas y disponibilidad del taller"
+        }
+    ]
+}
