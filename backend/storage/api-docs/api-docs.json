@@ -17,13 +17,12 @@
                     "Citas"
                 ],
                 "summary": "Consultar disponibilidad de huecos",
-                "description": "Calcula los intervalos de tiempo libres para un servicio basándose en su duración y las citas ya existentes.",
-                "operationId": "09fd012ab97514481bde57bbeac2699b",
+                "description": "Calcula los intervalos de tiempo libres para un servicio basándose en la jornada laboral (08:00-21:00).",
+                "operationId": "0a6d14b9a59e10c0c1ae0f8f7d50a6aa",
                 "parameters": [
                     {
                         "name": "service_id",
                         "in": "query",
-                        "description": "ID del servicio para obtener su duración media",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -32,7 +31,6 @@
                     {
                         "name": "date",
                         "in": "query",
-                        "description": "Fecha a consultar (formato YYYY-MM-DD)",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -42,43 +40,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Lista de huecos disponibles",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "date": {
-                                            "type": "string",
-                                            "example": "2026-05-15"
-                                        },
-                                        "service_duration": {
-                                            "type": "integer",
-                                            "example": 45
-                                        },
-                                        "available_slots": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "start": {
-                                                        "type": "string",
-                                                        "example": "09:00"
-                                                    },
-                                                    "end": {
-                                                        "type": "string",
-                                                        "example": "09:45"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Error de validación en los parámetros"
+                        "description": "Lista de huecos disponibles"
                     }
                 }
             },
@@ -87,8 +49,7 @@
                     "Citas"
                 ],
                 "summary": "Registrar una nueva cita",
-                "description": "Store a newly created resource in storage.",
-                "operationId": "15017f04a457b26e2a870c8a011a407a",
+                "operationId": "b092a6430241da631200068dd46d42b1",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -107,16 +68,16 @@
                                     },
                                     "service_id": {
                                         "type": "integer",
-                                        "example": 3
+                                        "example": 2
                                     },
                                     "date": {
                                         "type": "string",
                                         "format": "date",
-                                        "example": "2026-05-15"
+                                        "example": "2026-05-20"
                                     },
                                     "start_time": {
                                         "type": "string",
-                                        "example": "10:30"
+                                        "example": "10:00"
                                     }
                                 },
                                 "type": "object"
@@ -126,13 +87,10 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Cita creada correctamente"
+                        "description": "Cita creada"
                     },
                     "409": {
-                        "description": "El horario ya está ocupado"
-                    },
-                    "500": {
-                        "description": "Error interno"
+                        "description": "Horario ocupado"
                     }
                 }
             }
@@ -142,9 +100,8 @@
                 "tags": [
                     "Citas"
                 ],
-                "summary": "Obtener detalle de una cita específica",
-                "description": "Display the specified resource.",
-                "operationId": "13b46cd03a1dae29a4c4dd6e756d37da",
+                "summary": "Detalle de una cita",
+                "operationId": "9a089fd9f60f6f5d8e12f5fee0652aa6",
                 "parameters": [
                     {
                         "name": "id",
@@ -157,7 +114,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detalle de la cita"
+                        "description": "Datos de la cita encontrados"
                     },
                     "404": {
                         "description": "Cita no encontrada"
@@ -168,9 +125,8 @@
                 "tags": [
                     "Citas"
                 ],
-                "summary": "Actualizar una cita",
-                "description": "Update the specified resource in storage.",
-                "operationId": "a779a3a6175fee8a68b75461718a1ec3",
+                "summary": "Actualizar cita",
+                "operationId": "3c60c627e501d752441cc32aaf082f6c",
                 "parameters": [
                     {
                         "name": "id",
@@ -182,20 +138,12 @@
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "vehicle_id": {
-                                        "type": "integer"
-                                    },
                                     "service_id": {
                                         "type": "integer"
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "date"
                                     },
                                     "start_time": {
                                         "type": "string"
@@ -208,13 +156,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Cita actualizada"
-                    },
-                    "409": {
-                        "description": "Conflicto de horario"
-                    },
-                    "422": {
-                        "description": "Horario fuera de jornada laboral"
+                        "description": "Actualizado correctamente"
                     }
                 }
             },
@@ -222,9 +164,8 @@
                 "tags": [
                     "Citas"
                 ],
-                "summary": "Eliminar una cita del sistema",
-                "description": "Remove the specified resource from storage.",
-                "operationId": "cc5727c249d22f6719923c09625213e0",
+                "summary": "Eliminar cita",
+                "operationId": "e86d0db552f8a2117f3e2d194d765825",
                 "parameters": [
                     {
                         "name": "id",
@@ -237,19 +178,55 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Cita eliminada correctamente"
+                        "description": "Eliminado"
                     },
                     "404": {
-                        "description": "Cita no encontrada"
+                        "description": "No encontrado"
                     }
                 }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Cita": {
+                "title": "Cita del Taller",
+                "description": "Detalles de una cita para limpieza o reparación",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "cliente_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "fecha": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-05-15 10:30:00"
+                    },
+                    "servicio": {
+                        "type": "string",
+                        "example": "Lavado Premium"
+                    },
+                    "estado": {
+                        "type": "string",
+                        "enum": [
+                            "pendiente",
+                            "completada",
+                            "cancelada"
+                        ]
+                    }
+                },
+                "type": "object"
             }
         }
     },
     "tags": [
         {
             "name": "Citas",
-            "description": "Gestión de citas y disponibilidad del taller"
+            "description": "Citas"
         }
     ]
 }
