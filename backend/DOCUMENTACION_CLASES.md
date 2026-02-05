@@ -7,71 +7,57 @@ La clase `User` es el modelo fundamental que representa a los usuarios dentro de
 
 ### 2. Alcance
 Esta clase abarca las siguientes responsabilidades y características:
-- **Gestión de Identidad**: Almacena y gestiona información vital del usuario como `name`, `email` y `password`.
-- **Autenticación y Seguridad**: Maneja la verificación de credenciales y la gestión de tokens de API (`api_token`) para el acceso seguro.
+- **Gestión de Identidad**: Almacena y gestiona información vital del usuario. Mapea la tabla `users` de la base de datos.
+- **Estructura de Datos**:
+    - Campos asignables (`$fillable`): `name`, `email`, `password`, `role_id`, `api_token`.
+- **Autenticación y Seguridad**: Maneja la verificación de credenciales y el acceso mediante API.
 - **Roles y Permisos**: Se vincula con el modelo `Role` para determinar el nivel de acceso del usuario (`role_id`).
-- **Historial de Operaciones**: Mantiene relaciones con los modelos de negocio:
-    - `orders`: Pedidos realizados por el usuario.
-    - `appointments`: Citas de servicio programadas por el usuario.
-- **Funcionalidades Eloquent**: Aprovecha las características de Laravel como `Notifiable` para notificaciones y `HasFactory` para pruebas.
+- **Historial de Operaciones**: Mantiene relaciones con los modelos de negocio (`orders`, `appointments`).
 
 ### 3. Dependencias
 La clase `User` depende de los siguientes componentes y traits de Laravel y de la aplicación:
 
 **Internas (Modelos):**
-- `App\Models\Role` (BelongsTo): Define el rol del usuario.
-- `App\Models\Order` (HasMany): Relación con pedidos.
-- `App\Models\Appointment` (HasMany): Relación con citas.
+- `App\Models\Role` (Relación `BelongsTo` - N:1): Define el rol del usuario.
+- `App\Models\Order` (Relación `HasMany` - 1:N): Pedidos realizados por el usuario.
+- `App\Models\Appointment` (Relación `HasMany` - 1:N): Citas programadas por el usuario.
 
 **Externas (Laravel Framework):**
-- `Illuminate\Foundation\Auth\User`: Clase base para modelos autenticables.
-- `Illuminate\Notifications\Notifiable`: Trait para envío de notificaciones.
-- `Laravel\Sanctum\HasApiTokens`: Trait para gestión de tokens (aunque el código actual muestra una implementación manual de `api_token`).
-- `Illuminate\Database\Eloquent\Factories\HasFactory`: Trait para factories de base de datos.
+- `Illuminate\Foundation\Auth\User`: Clase base extendida.
+- `Illuminate\Notifications\Notifiable`: Trait para notificaciones.
+- `Laravel\Sanctum\HasApiTokens`: Importado (aunque la gestión actual es manual).
 
 ### 4. Integración en la aplicación
 
 #### 4.1. Referencia al proyecto
-El namespace completo de la clase es:
-`App\Models\User`
-
-Se encuentra ubicada físicamente en:
-`backend/app/Models/User.php`
+- **Namespace**: `App\Models\User`
+- **Ubicación Física**: `backend/app/Models/User.php`
 
 #### 4.2. Uso de instancia de clases
-- **Instanciación Implícita (Eloquent)**: La instancia se crea automáticamente al realizar consultas a la base de datos (ej. `User::find(1)`).
-- **Inyección de Dependencias**: En los controladores, Laravel inyecta la instancia del usuario autenticado a través del `Request` o la fachada `Auth`.
-- **Creación Manual**: Se puede instanciar manualmente `new User()` para preparar un objeto antes de persistirlo con `save()`.
+La clase se instancia principalmente a través del ORM Eloquent.
+- **Obtención**: `User::find($id)` o a través del request `Auth::user()`.
+- **Persistencia**: Se utiliza el método `create()` o `save()` para almacenar nuevos registros.
+
+> [!IMPORTANT]
+> **Nota de Implementación**: La autenticación de API utiliza un campo `api_token` gestionado manualmente en la tabla `users`, en lugar de una tabla de tokens separada (como Sanctum estándar). Esto afecta cómo se instancia y recupera el usuario en las peticiones API.
 
 #### 4.3. Ejemplos de uso
 
-**Crear un nuevo usuario:**
+**Creación de un usuario (Registro):**
 ```php
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-
 $user = User::create([
-    'name' => 'Juan Perez',
-    'email' => 'juan@example.com',
-    'password' => Hash::make('password123'),
-    'role_id' => 2 // Asumiendo 2 es 'Cliente'
+    'name' => 'Nuevo Cliente',
+    'email' => 'cliente@example.com',
+    'password' => Hash::make('secure_pass'),
+    'role_id' => 2,
+    'api_token' => Str::random(60) // Generación manual del token
 ]);
 ```
 
-**Obtener el usuario autenticado y sus citas:**
+**Acceso a relaciones (Citas del usuario):**
 ```php
-// En un controlador
-public function misCitas(Request $request) {
-    $user = $request->user(); // Instancia de User autenticado
-    $citas = $user->appointments; // Acceso a la relación hasMany
-    return response()->json($citas);
-}
-```
-
-**Verificar rol del usuario:**
-```php
-$user = User::find(1);
-if ($user->role->name === 'admin') {
-    // Lógica de administrador
+$user = Auth::user();
+foreach ($user->appointments as $appointment) {
+    echo $appointment->date;
 }
 ```
