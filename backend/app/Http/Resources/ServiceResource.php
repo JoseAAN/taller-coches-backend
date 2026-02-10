@@ -20,6 +20,7 @@ class ServiceResource extends JsonResource
             'price' => $this->price,
             'average_duration_mins' => $this->average_duration,
             'description' => $this->description,
+            'show_on_home' => $this->show_on_home,
             'type' => [
                 'id' => $this->service_type_id,
                 'name' => $this->serviceType ? $this->serviceType->name : null,
