@@ -42,6 +42,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/users', [UserController::class, 'store']);
 
     // Servicios: Lectura pública
+    Route::get('/services/services-home', [ServiceController::class, 'getHomeServices']);
     Route::get('/services', [ServiceController::class, 'index']);
     Route::get('/services/{service}', [ServiceController::class, 'show']);
 
@@ -94,6 +95,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/services', [ServiceController::class, 'store']);
     Route::put('/services/{service}', [ServiceController::class, 'update']);
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
+    Route::post('/services/{service}/toggle-home', [ServiceController::class, 'toggleShowOnHome']);
 
     // Carts: Gestión
     Route::post('/carts', [CartController::class, 'store']);
