@@ -26,8 +26,10 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'], // confirmed expects password_confirmation field
+            'captcha' => ['required', 'captcha'],
         ];
         //Nota: he eliminado el campo role_id ya que no es necesario, el rol se asigna por defecto al cliente
         //Nota2: el campo de "confirmed" espera un campo llamado "password_confirmation". 
+        //Nota3: se añadió la validación del captcha
     }
 }
