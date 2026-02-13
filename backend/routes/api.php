@@ -123,4 +123,9 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
     Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
 
+    // Admin Navigation Items: Gestión
+    Route::post('/admin-navigation', [AdminNavigationItemController::class, 'store']);
+    Route::put('/admin-navigation/{item}', [AdminNavigationItemController::class, 'update']);
+    Route::delete('/admin-navigation/{item}', [AdminNavigationItemController::class, 'destroy']);
+
 });
