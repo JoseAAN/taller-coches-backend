@@ -56,7 +56,7 @@ Route::prefix('v1')->group(function () {
     // Facturas de servicios público
     Route::get('/service-invoices', [ServiceInvoiceController::class, 'index']);
     Route::get('/service-invoices/{id}', [ServiceInvoiceController::class, 'show']);
-
+   
      // Citas
     Route::get('/appointment', [AppointmentController::class, 'index']);
     Route::post('/appointment', [AppointmentController::class, 'store']);

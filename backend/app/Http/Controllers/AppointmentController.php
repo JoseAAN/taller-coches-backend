@@ -143,7 +143,6 @@ class AppointmentController extends Controller
      */
     public function show(int $appointmentId)
     {
-
         try {
             $appointment = Appointment::with([
                 'vehicle.vehicleType',
@@ -165,13 +164,11 @@ class AppointmentController extends Controller
             ], 404);
         }
     }
-
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, int $appointmentId)
     {
-
         $validateCite = $request->validate([
             'vehicle_id' => 'required',
             'service_id' => 'required',
@@ -199,7 +196,7 @@ class AppointmentController extends Controller
                 ->where('appointment_date', '<', $end)
                 ->where('end_time', '>', $start)
                 ->exists();
-
+            
             if ($exists) {
                 return response()->json(['message' => 'El nuevo horario ya está ocupado'], 409);
             }
