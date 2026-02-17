@@ -185,6 +185,1823 @@
                     }
                 }
             }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Iniciar sesión",
+                "description": "Autentica al usuario y devuelve un token de acceso.",
+                "operationId": "eb1dc5d90ebcec8effb6b54eb70faa4d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "juan@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login exitoso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login exitoso"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "d83j..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Credenciales incorrectas"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Cerrar sesión",
+                "description": "Invalida el token de acceso actual.",
+                "operationId": "62a427ca5eb75925f80437cc7985674b",
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sesión cerrada correctamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Obtener usuario autenticado",
+                "description": "Devuelve la información del usuario actual junto con su rol.",
+                "operationId": "6d20eeda685fd46c03ddeb5cc34c397c",
+                "responses": {
+                    "200": {
+                        "description": "Información del usuario",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/carts": {
+            "get": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Listar carritos",
+                "description": "Obtiene una lista de todos los carritos con sus productos.",
+                "operationId": "7f72f6a1d160133fbaafef4761135b69",
+                "responses": {
+                    "200": {
+                        "description": "Lista de carritos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Cart"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Crear carrito",
+                "description": "Crea un nuevo carrito para un usuario.",
+                "operationId": "1eedaf6277611aff72aa7f6229631368",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "price"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Carrito creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/carts/{id}": {
+            "get": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Obtener carrito",
+                "description": "Obtiene los detalles de un carrito específico.",
+                "operationId": "8ef302e214887cef0c5d8041eb1aecca",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del carrito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Carrito no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Actualizar carrito",
+                "description": "Actualiza un carrito (requiere rol de admin).",
+                "operationId": "7d8db9514aa227f08a42ea9cb116a9b6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Carrito actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Carrito no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Carts"
+                ],
+                "summary": "Eliminar carrito",
+                "description": "Elimina un carrito (requiere rol de admin).",
+                "operationId": "ec7af2746f1ee18f0d7a2879607e8443",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Carrito eliminado correctamente"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Carrito no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/cartinvoice": {
+            "get": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Listar facturas de carrito",
+                "description": "Obtiene una lista de todas las facturas de carritos.",
+                "operationId": "7803274bebd7f82af448c2ce850c09b0",
+                "responses": {
+                    "200": {
+                        "description": "Lista de facturas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CartInvoice"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cartinvoice/{id}": {
+            "get": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Obtener factura de carrito",
+                "description": "Obtiene los detalles de una factura específica.",
+                "operationId": "40b5946da04a3c65fe3a16ee7ffa1dbf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles de la factura",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/cart-products": {
+            "get": {
+                "tags": [
+                    "CartProducts"
+                ],
+                "summary": "Listar productos de carritos",
+                "description": "Obtiene una lista paginada de productos en carritos.",
+                "operationId": "1a2f761b688eb5b80112e8e88b045d7c",
+                "parameters": [
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Ordenar por campo (created_at, priceInTime, totalPerProduct, etc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "Orden (asc, desc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de productos en carritos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CartProduct"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "CartProducts"
+                ],
+                "summary": "Agregar producto al carrito",
+                "description": "Agrega un producto a un carrito existente.",
+                "operationId": "3a8387656c8d779c654f70daf52fed6d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cart_id",
+                                    "product_id",
+                                    "quantity",
+                                    "priceInTime"
+                                ],
+                                "properties": {
+                                    "cart_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "priceInTime": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Producto agregado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartProduct"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/cart-products/{id}": {
+            "get": {
+                "tags": [
+                    "CartProducts"
+                ],
+                "summary": "Obtener producto de carrito",
+                "description": "Obtiene los detalles de un producto en un carrito.",
+                "operationId": "3c74475e0347b67cb76e6678f7ef5c40",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del producto en carrito",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartProduct"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "CartProducts"
+                ],
+                "summary": "Actualizar producto de carrito",
+                "description": "Actualiza un producto en un carrito (requiere rol de admin).",
+                "operationId": "f305f0e62c224e8a453209e229e3dd7a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer"
+                                    },
+                                    "priceInTime": {
+                                        "type": "number",
+                                        "format": "float"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CartProduct"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "CartProducts"
+                ],
+                "summary": "Eliminar producto de carrito",
+                "description": "Elimina un producto de un carrito (requiere rol de admin).",
+                "operationId": "ea0ee680b4ef19598544b8a00f8ac060",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado correctamente"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Listar productos",
+                "description": "Obtiene una lista paginada de productos. Permite filtrar por categoría y buscar por nombre/descripción.",
+                "operationId": "013a3f9272fe7452d7e9dcf36f0a5333",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de categoría",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por nombre o descripción",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de productos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Crear producto",
+                "description": "Crea un nuevo producto en el sistema.",
+                "operationId": "3c1030399202e6843ff62d3d74020cef",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "price",
+                                    "stock"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Batería 12V"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Batería de larga duración"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 120.5
+                                    },
+                                    "stock": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "categories": {
+                                        "description": "Array de IDs de categorías",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            3
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Producto creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Obtener producto",
+                "description": "Obtiene los detalles de un producto específico.",
+                "operationId": "2ff8f8c69a22530828af8dd573d56bf3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del producto",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Actualizar producto",
+                "description": "Actualiza los datos de un producto existente.",
+                "operationId": "c1529a6491568f858cece7e90e5430e8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Datos del producto a actualizar",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "stock": {
+                                        "type": "integer"
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Producto actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Productos"
+                ],
+                "summary": "Eliminar producto",
+                "description": "Elimina un producto del sistema.",
+                "operationId": "a2c5225f05fad1c8f79b1b1cf1e63b35",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producto eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/product-invoices": {
+            "get": {
+                "tags": [
+                    "ProductInvoices"
+                ],
+                "summary": "Listar facturas de productos (Público)",
+                "description": "Obtiene una lista de facturas de productos. Permite buscar por número de factura.",
+                "operationId": "340f5fdc90331b1ffc713c9517723a3c",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por número de factura",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Ordenar por campo",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de facturas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductInvoice"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/product-invoices": {
+            "post": {
+                "tags": [
+                    "ProductInvoices"
+                ],
+                "summary": "Crear factura de producto",
+                "description": "Crea una nueva factura de producto (requiere auth).",
+                "operationId": "f0885cd44791b8ae1b4780c467c0cccd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "total",
+                                    "cart_id"
+                                ],
+                                "properties": {
+                                    "total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 150
+                                    },
+                                    "cart_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Factura creada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/product-invoices/{id}": {
+            "get": {
+                "tags": [
+                    "ProductInvoices"
+                ],
+                "summary": "Obtener factura de producto",
+                "description": "Obtiene los detalles de una factura de producto específica.",
+                "operationId": "88ef62344c3cff299a0e76dd4d8d14b6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles de la factura",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                }
+            }
+        },
+        "/api/v1/product-invoices/{id}": {
+            "put": {
+                "tags": [
+                    "ProductInvoices"
+                ],
+                "summary": "Actualizar factura de producto",
+                "description": "Actualiza una factura de producto (requiere rol de admin).",
+                "operationId": "96e0e0ce12ad7c04ec5a998574e49303",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "invoice_number": {
+                                        "type": "string"
+                                    },
+                                    "total": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "cart_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Factura actualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProductInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "ProductInvoices"
+                ],
+                "summary": "Eliminar factura de producto",
+                "description": "Elimina una factura de producto (requiere rol de admin).",
+                "operationId": "dc80b0a1dc8bea8ffb8d2f9a849aa74d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Factura eliminada correctamente"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/services": {
+            "get": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Listar servicios",
+                "description": "Obtiene una lista paginada de servicios. Permite filtrar por tipo y buscar por nombre/descripción.",
+                "operationId": "806ad811ba0db617f65de7d6c6e56c87",
+                "parameters": [
+                    {
+                        "name": "service_type_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de tipo de servicio",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por nombre o descripción",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de servicios",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Service"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Crear servicio",
+                "description": "Crea un nuevo servicio en el sistema.",
+                "operationId": "82a5ae897b14363a9d7bcede3080f088",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "price",
+                                    "service_type_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Alineación y Balanceo"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 35
+                                    },
+                                    "average_duration": {
+                                        "type": "integer",
+                                        "example": 60
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Servicio completo de alineación"
+                                    },
+                                    "service_type_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Servicio creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Service"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/services/{id}": {
+            "get": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Obtener servicio",
+                "description": "Obtiene los detalles de un servicio específico.",
+                "operationId": "30bb33f83eca6865c4df213922c9a5d4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del servicio",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Service"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Servicio no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Actualizar servicio",
+                "description": "Actualiza los datos de un servicio existente.",
+                "operationId": "b7aeffc8e64748ef401cb445d81c236a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Datos del servicio a actualizar",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "average_duration": {
+                                        "type": "integer"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "service_type_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Servicio actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Service"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Servicio no encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Eliminar servicio",
+                "description": "Elimina un servicio del sistema.",
+                "operationId": "1102ac452835ec74e1d0f9b1eba0a9f9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Servicio eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Servicio no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/services/{id}/toggle-home": {
+            "patch": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Alternar mostrar en inicio",
+                "description": "Activa o desactiva la visualización de un servicio en la página de inicio. Máximo 3 servicios permitidos en inicio.",
+                "operationId": "d87015e754fd7fdb29a2443c0dd0015e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "show_on_home"
+                                ],
+                                "properties": {
+                                    "show_on_home": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Estado actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Service"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Servicio no encontrado"
+                    },
+                    "422": {
+                        "description": "Límite de servicios en inicio alcanzado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Límite alcanzado"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/home-services": {
+            "get": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Servicios destacados",
+                "description": "Obtiene la lista de servicios marcados para mostrar en la página de inicio.",
+                "operationId": "43906c380d3e0fe4b3f62edd8b2bef76",
+                "responses": {
+                    "200": {
+                        "description": "Lista de servicios destacados",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Service"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/service-invoices": {
+            "get": {
+                "tags": [
+                    "ServiceInvoices"
+                ],
+                "summary": "Listar facturas de servicios (Público)",
+                "description": "Obtiene una lista de facturas de servicios. Permite buscar por número de factura.",
+                "operationId": "ae73a49c951d44e2d45c544c72889800",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por número de factura",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Ordenar por campo",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de facturas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ServiceInvoice"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/service-invoices": {
+            "post": {
+                "tags": [
+                    "ServiceInvoices"
+                ],
+                "summary": "Crear factura de servicio",
+                "description": "Crea una nueva factura de servicio (requiere rol de admin).",
+                "operationId": "191df2635d1a69da60c8c9e41486f7b3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "total",
+                                    "user_id",
+                                    "appointment_id"
+                                ],
+                                "properties": {
+                                    "total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 85.5
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "appointment_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Factura creada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/service-invoices/{id}": {
+            "get": {
+                "tags": [
+                    "ServiceInvoices"
+                ],
+                "summary": "Obtener factura de servicio",
+                "description": "Obtiene los detalles de una factura de servicio específica.",
+                "operationId": "3277d4904a287d46fc8f9726d703f60a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles de la factura",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                }
+            }
+        },
+        "/api/v1/service-invoices/{id}": {
+            "put": {
+                "tags": [
+                    "ServiceInvoices"
+                ],
+                "summary": "Actualizar factura de servicio",
+                "description": "Actualiza una factura de servicio (requiere rol de admin).",
+                "operationId": "771001bf105d03ef75538df7e1ce2404",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "invoice_number": {
+                                        "type": "string"
+                                    },
+                                    "total": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "user_id": {
+                                        "type": "integer"
+                                    },
+                                    "appointment_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Factura actualizada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ServiceInvoice"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "ServiceInvoices"
+                ],
+                "summary": "Eliminar factura de servicio",
+                "description": "Elimina una factura de servicio (requiere rol de admin).",
+                "operationId": "30282ff1af7538b60498d4a8091ffb1c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Factura eliminada correctamente"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Factura no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/users": {
+            "post": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Registrar usuario",
+                "description": "Registra un nuevo usuario en el sistema con rol de cliente.",
+                "operationId": "4684bbc7ece9f9cadbf27ea7eafff4b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Maria Rodriguez"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "maria@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario registrado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuario registrado exitosamente"
+                                        },
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "d83j..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -220,6 +2037,363 @@
                     }
                 },
                 "type": "object"
+            },
+            "Cart": {
+                "title": "Carrito",
+                "description": "Carrito de compras",
+                "required": [
+                    "user_id",
+                    "price"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del carrito",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID del usuario propietario",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "price": {
+                        "description": "Precio total del carrito",
+                        "format": "float",
+                        "example": 150
+                    }
+                },
+                "type": "object"
+            },
+            "CartInvoice": {
+                "title": "Factura de Carrito",
+                "description": "Factura generada a partir de un carrito",
+                "properties": {
+                    "id": {
+                        "description": "ID de la factura",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "CartProduct": {
+                "title": "Producto en Carrito",
+                "description": "Relación entre carrito y producto",
+                "required": [
+                    "cart_id",
+                    "product_id",
+                    "quantity"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del registro",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "cart_id": {
+                        "description": "ID del carrito",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "description": "ID del producto",
+                        "format": "int64",
+                        "example": 5
+                    },
+                    "quantity": {
+                        "description": "Cantidad",
+                        "format": "int64",
+                        "example": 2
+                    },
+                    "priceInTime": {
+                        "description": "Precio unitario en el momento",
+                        "format": "float",
+                        "example": 50
+                    },
+                    "totalPerProduct": {
+                        "description": "Total por producto (cantidad * precio)",
+                        "format": "float",
+                        "example": 100
+                    }
+                },
+                "type": "object"
+            },
+            "Order": {
+                "title": "Pedido",
+                "description": "Pedido realizado por un usuario",
+                "properties": {
+                    "id": {
+                        "description": "ID del pedido",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "title": "Producto",
+                "description": "Modelo de producto",
+                "required": [
+                    "name",
+                    "price",
+                    "stock"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del producto",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del producto",
+                        "example": "Aceite de Motor"
+                    },
+                    "description": {
+                        "description": "Descripción del producto",
+                        "example": "Aceite sintético 5W-30"
+                    },
+                    "price": {
+                        "description": "Precio del producto",
+                        "format": "float",
+                        "example": 45.99
+                    },
+                    "stock": {
+                        "description": "Stock disponible",
+                        "format": "int64",
+                        "example": 100
+                    }
+                },
+                "type": "object"
+            },
+            "ProductInvoice": {
+                "title": "Factura de Productos",
+                "description": "Factura generada por la compra de productos",
+                "required": [
+                    "total",
+                    "cart_id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID de la factura",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "invoice_number": {
+                        "description": "Número de factura (PINV-XXXXX)",
+                        "example": "PINV-00001"
+                    },
+                    "total": {
+                        "description": "Total de la factura",
+                        "format": "float",
+                        "example": 150
+                    },
+                    "cart_id": {
+                        "description": "ID del carrito asociado",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Role": {
+                "title": "Rol",
+                "description": "Rol de usuario",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del rol",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del rol",
+                        "example": "admin"
+                    }
+                },
+                "type": "object"
+            },
+            "Service": {
+                "title": "Servicio",
+                "description": "Modelo de servicio ofertado",
+                "required": [
+                    "name",
+                    "price",
+                    "service_type_id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del servicio",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del servicio",
+                        "example": "Cambio de Aceite"
+                    },
+                    "price": {
+                        "description": "Precio del servicio",
+                        "format": "float",
+                        "example": 50
+                    },
+                    "average_duration": {
+                        "description": "Duración media en minutos",
+                        "format": "int64",
+                        "example": 45
+                    },
+                    "description": {
+                        "description": "Descripción del servicio",
+                        "example": "Cambio de aceite y filtro"
+                    },
+                    "service_type_id": {
+                        "description": "ID del tipo de servicio asociado",
+                        "format": "int64",
+                        "example": 2
+                    },
+                    "show_on_home": {
+                        "description": "Mostrar en página de inicio",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "ServiceInvoice": {
+                "title": "Factura de Servicios",
+                "description": "Factura generada por servicios realizados",
+                "required": [
+                    "total",
+                    "user_id",
+                    "appointment_id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID de la factura",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "invoice_number": {
+                        "description": "Número de factura (SINV-XXXXX)",
+                        "example": "SINV-00001"
+                    },
+                    "total": {
+                        "description": "Total de la factura",
+                        "format": "float",
+                        "example": 85.5
+                    },
+                    "user_id": {
+                        "description": "ID del usuario",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "appointment_id": {
+                        "description": "ID de la cita asociada",
+                        "format": "int64",
+                        "example": 10
+                    }
+                },
+                "type": "object"
+            },
+            "ServiceType": {
+                "title": "Tipo de Servicio",
+                "description": "Categoría o tipo de servicio",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del tipo de servicio",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del tipo de servicio",
+                        "example": "Mecánica General"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "Usuario",
+                "description": "Modelo de usuario del sistema",
+                "required": [
+                    "name",
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del usuario",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del usuario",
+                        "example": "Juan Perez"
+                    },
+                    "email": {
+                        "description": "Correo electrónico",
+                        "format": "email",
+                        "example": "juan@example.com"
+                    },
+                    "role_id": {
+                        "description": "ID del rol",
+                        "format": "int64",
+                        "example": 2
+                    },
+                    "api_token": {
+                        "description": "Token de API (solo lectura)",
+                        "example": "d83j..."
+                    }
+                },
+                "type": "object"
+            },
+            "Vehicle": {
+                "title": "Vehículo",
+                "description": "Vehículo de un usuario",
+                "required": [
+                    "license_plate",
+                    "vehicle_type_id",
+                    "user_id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID del vehículo",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "license_plate": {
+                        "description": "Matrícula",
+                        "example": "1234ABC"
+                    },
+                    "vehicle_type_id": {
+                        "description": "ID del tipo de vehículo",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID del usuario propietario",
+                        "format": "int64",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "VehicleType": {
+                "title": "Tipo de Vehículo",
+                "description": "Clasificación de vehículos",
+                "properties": {
+                    "id": {
+                        "description": "ID del tipo",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre del tipo",
+                        "example": "Turismo"
+                    }
+                },
+                "type": "object"
             }
         }
     },
@@ -227,6 +2401,42 @@
         {
             "name": "Citas",
             "description": "Citas"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Carts",
+            "description": "Carts"
+        },
+        {
+            "name": "Invoices",
+            "description": "Invoices"
+        },
+        {
+            "name": "CartProducts",
+            "description": "CartProducts"
+        },
+        {
+            "name": "Productos",
+            "description": "Productos"
+        },
+        {
+            "name": "ProductInvoices",
+            "description": "ProductInvoices"
+        },
+        {
+            "name": "Servicios",
+            "description": "Servicios"
+        },
+        {
+            "name": "ServiceInvoices",
+            "description": "ServiceInvoices"
+        },
+        {
+            "name": "Usuarios",
+            "description": "Usuarios"
         }
     ]
 }

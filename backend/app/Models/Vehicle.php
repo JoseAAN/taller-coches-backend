@@ -5,8 +5,28 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "Vehicle",
+    required: ["license_plate", "vehicle_type_id", "user_id"],
+    title: "Vehículo",
+    description: "Vehículo de un usuario"
+)]
 class Vehicle extends Model
 {
+    #[OA\Property(format: "int64", description: "ID del vehículo", example: 1)]
+    private $id;
+
+    #[OA\Property(description: "Matrícula", example: "1234ABC")]
+    private $license_plate;
+
+    #[OA\Property(format: "int64", description: "ID del tipo de vehículo", example: 1)]
+    private $vehicle_type_id;
+
+    #[OA\Property(format: "int64", description: "ID del usuario propietario", example: 1)]
+    private $user_id;
+
     protected $fillable = ['license_plate', 'vehicle_type_id', 'user_id'];
 
     public function vehicleType()
