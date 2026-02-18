@@ -4,7 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use OpenApi\Attributes as OA;
 
+#[OA\Schema(
+    schema: "Cita",
+    title: "Cita del Taller",
+    description: "Detalles de una cita para limpieza o reparación",
+    properties: [
+        new OA\Property(property: "id", type: "integer", example: 1),
+        new OA\Property(property: "cliente_id", type: "integer", example: 5),
+        new OA\Property(property: "fecha", type: "string", format: "date-time", example: "2026-05-15 10:30:00"),
+        new OA\Property(property: "servicio", type: "string", example: "Lavado Premium"),
+        new OA\Property(property: "estado", type: "string", enum: ["pendiente", "completada", "cancelada"])
+    ]
+)]
 class Appointment extends Model
 {
     protected $fillable = [

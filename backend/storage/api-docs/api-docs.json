@@ -1,0 +1,232 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Taller",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Servidor Local"
+        }
+    ],
+    "paths": {
+        "/api/appointments": {
+            "get": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Consultar disponibilidad de huecos",
+                "description": "Calcula los intervalos de tiempo libres para un servicio basándose en la jornada laboral (08:00-21:00).",
+                "operationId": "0a6d14b9a59e10c0c1ae0f8f7d50a6aa",
+                "parameters": [
+                    {
+                        "name": "service_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de huecos disponibles"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Registrar una nueva cita",
+                "operationId": "b092a6430241da631200068dd46d42b1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "vehicle_id",
+                                    "service_id",
+                                    "date",
+                                    "start_time"
+                                ],
+                                "properties": {
+                                    "vehicle_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "service_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-05-20"
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "10:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cita creada"
+                    },
+                    "409": {
+                        "description": "Horario ocupado"
+                    }
+                }
+            }
+        },
+        "/api/appointments/{id}": {
+            "get": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Detalle de una cita",
+                "operationId": "9a089fd9f60f6f5d8e12f5fee0652aa6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos de la cita encontrados"
+                    },
+                    "404": {
+                        "description": "Cita no encontrada"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Actualizar cita",
+                "operationId": "3c60c627e501d752441cc32aaf082f6c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "service_id": {
+                                        "type": "integer"
+                                    },
+                                    "start_time": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado correctamente"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Citas"
+                ],
+                "summary": "Eliminar cita",
+                "operationId": "e86d0db552f8a2117f3e2d194d765825",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Eliminado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Cita": {
+                "title": "Cita del Taller",
+                "description": "Detalles de una cita para limpieza o reparación",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "cliente_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "fecha": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-05-15 10:30:00"
+                    },
+                    "servicio": {
+                        "type": "string",
+                        "example": "Lavado Premium"
+                    },
+                    "estado": {
+                        "type": "string",
+                        "enum": [
+                            "pendiente",
+                            "completada",
+                            "cancelada"
+                        ]
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Citas",
+            "description": "Citas"
+        }
+    ]
+}

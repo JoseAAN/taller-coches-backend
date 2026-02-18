@@ -15,6 +15,7 @@ class Service extends Model
         'average_duration',
         'description',
         'service_type_id',
+        'show_on_home',
     ];
 
     public function serviceType()

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->integer('average_duration')->nullable(); // Minutos o horas (por definir)
             $table->text('description')->nullable();
+            $table->boolean('show_on_home')->default(false);
             $table->timestamps();
         });
     }

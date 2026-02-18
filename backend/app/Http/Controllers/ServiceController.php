@@ -87,4 +87,36 @@ class ServiceController extends Controller
         $service->delete();
         return response()->json(['message' => 'Servicio eliminado correctamente']);
     }
+
+    /**
+     * Alterna el estado de "mostrar en home" para un servicio.
+     */
+    public function toggleShowOnHome(Service $service, Request $request)
+    {
+        $limit = 3;
+        // Verificamos el límite para que no podamos mostrar más de 3 servicios en home
+        if (!$service->show_on_home) {
+            $count = Service::where('show_on_home', true)->count();
+            if ($count >= $limit) {
+                return response()->json([
+                    'message' => 'Límite alcanzado'
+                ], 422);
+            }
+        }
+
+        if (!$service) {
+            return response()->json(['message' => 'Servicio no encontrado'], 404);
+        }
+
+        $service->show_on_home = $request->show_on_home;
+        $service->save();
+
+        return new ServiceResource($service->load('serviceType'));
+    }
+
+    public function getHomeServices()
+    {
+        $services = Service::where('show_on_home', true)->with('serviceType')->get();
+        return new ServiceCollection($services);
+    }
 }
