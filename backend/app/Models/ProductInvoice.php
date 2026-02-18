@@ -5,11 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: "ProductInvoice",
+    required: ["total", "cart_id"],
+    title: "Factura de Productos",
+    description: "Factura generada por la compra de productos"
+)]
 class ProductInvoice extends Model
 {
     use HasFactory;
     
     protected $table = 'product_invoices';
+
+    #[OA\Property(format: "int64", description: "ID de la factura", example: 1)]
+    private $id;
+
+    #[OA\Property(description: "Número de factura (PINV-XXXXX)", example: "PINV-00001")]
+    private $invoice_number;
+
+    #[OA\Property(format: "float", description: "Total de la factura", example: 150.00)]
+    private $total;
+
+    #[OA\Property(format: "int64", description: "ID del carrito asociado", example: 1)]
+    private $cart_id;
+
     protected $fillable = [
         'total',
         'cart_id',
