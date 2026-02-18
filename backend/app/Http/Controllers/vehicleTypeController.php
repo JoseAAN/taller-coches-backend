@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\VehicleType;
 use Illuminate\Http\Request;
 
 class vehicleTypeController extends Controller
@@ -9,9 +10,18 @@ class vehicleTypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $request->validate([
+            'user_id' => 'required',
+        ]);
+
+        $vehicleTypes = VehicleType::all();
+
+        dd($vehicleTypes);
+        return response()->json([
+
+        ]);
     }
 
     /**
