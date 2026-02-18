@@ -2,12 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Vehicle extends Model
 {
-    protected $fillable = ['license_plate', 'vehicle_type_id', 'user_id'];
+    use HasFactory;
+    protected $table = 'vehicles';
+    protected $fillable = [
+        'license_plate',
+        'vehicle_type_id',
+        'user_id',
+        'color',
+        'model',
+        'brand',
+    ];
 
     public function vehicleType()
     {

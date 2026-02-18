@@ -44,6 +44,9 @@ class DatabaseSeeder extends Seeder
             ProductInvoiceSeeder::class,
             //ServiceInvoiceSeeder::class
             AdminNavigationItemSeeder::class,
+            VehicleTypeSeeder::class,
+            VehiclesSeeder::class,
+
         ]);
     }
 }
