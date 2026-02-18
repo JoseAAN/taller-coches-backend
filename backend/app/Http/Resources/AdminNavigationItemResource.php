@@ -15,11 +15,13 @@ class AdminNavigationItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'    => $this->id,
+            'id'=> $this->id,
             'label' => $this->label,
-            'icon'  => $this->icon,
+            'icon' => $this->icon,
             'route' => $this->route,
+            'is_active' => $this->is_active,
             'children' => AdminNavigationItemResource::collection($this->whenLoaded('children')),
+            'order' => $this->order
         ];
     }
 }
