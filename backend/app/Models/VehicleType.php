@@ -15,6 +15,8 @@ use OpenApi\Attributes as OA;
 )]
 class VehicleType extends Model
 {
+
+    protected $fillable = ['name'];
     #[OA\Property(format: "int64", description: "ID del tipo", example: 1)]
     private $id;
 

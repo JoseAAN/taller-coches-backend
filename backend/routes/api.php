@@ -1,17 +1,18 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\ProductsController;
-use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\CartInvoiceController;
 use App\Http\Controllers\CartProductController;
 use App\Http\Controllers\ProductInvoiceController;
+use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceInvoiceController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\vehicleTypeController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 
 // Rutas Públicas
@@ -57,7 +58,7 @@ Route::prefix('v1')->group(function () {
     // Facturas de servicios público
     Route::get('/service-invoices', [ServiceInvoiceController::class, 'index']);
     Route::get('/service-invoices/{id}', [ServiceInvoiceController::class, 'show']);
-   
+
      // Citas
     Route::get('/appointment', [AppointmentController::class, 'index']);
     Route::post('/appointment', [AppointmentController::class, 'store']);
@@ -68,6 +69,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/cart-products', [CartProductController::class, 'index']);
     Route::get('/cart-products/{id}', [CartProductController::class, 'show']);
 
+    Route::get('/vehicleType', [vehicleTypeController::class, 'index']);
+    Route::post('/vehicleType', [vehicleTypeController::class, 'store']);
+    Route::put('/vehicleType', [vehicleTypeController::class, 'update']);
+    Route::delete('/vehicleType', [vehicleTypeController::class, 'delete']);
     });
 
     // Rutas Protegidas V1 (General)
