@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceInvoiceController;
+use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\vehicleTypeController;
 use Illuminate\Http\Request;
@@ -68,11 +69,17 @@ Route::prefix('v1')->group(function () {
     // Cart Poducts público
     Route::get('/cart-products', [CartProductController::class, 'index']);
     Route::get('/cart-products/{id}', [CartProductController::class, 'show']);
-
+    //vehicles Types
     Route::get('/vehicleType', [vehicleTypeController::class, 'index']);
     Route::post('/vehicleType', [vehicleTypeController::class, 'store']);
     Route::put('/vehicleType', [vehicleTypeController::class, 'update']);
     Route::delete('/vehicleType', [vehicleTypeController::class, 'delete']);
+
+    //Service Types
+    Route::get('/serviceType', [ServiceTypeController::class, 'index']);
+    Route::post('/serviceType', [ServiceTypeController::class, 'store']);
+    Route::put('/serviceType', [ServiceTypeController::class, 'update']);
+    Route::delete('/serviceType', [ServiceTypeController::class, 'destroy']);
     });
 
     // Rutas Protegidas V1 (General)

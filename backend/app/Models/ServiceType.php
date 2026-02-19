@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
 class ServiceType extends Model
 {
     use HasFactory;
-
+   
     #[OA\Property(format: "int64", description: "ID del tipo de servicio", example: 1)]
     private $id;
 
