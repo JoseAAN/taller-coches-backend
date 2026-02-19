@@ -42,7 +42,9 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             CartSeeder::class,
             ProductInvoiceSeeder::class,
-            ServiceInvoiceSeeder::class
+            ServiceInvoiceSeeder::class,
+            VehicleTypeSeeder::class,
+            VehiclesSeeder::class,
         ]);
     }
 }
