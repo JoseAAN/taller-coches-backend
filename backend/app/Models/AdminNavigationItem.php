@@ -20,6 +20,10 @@ class AdminNavigationItem extends Model
         'is_active'
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     //esto obtiene los hijos de cada tab padre
     public function children(): HasMany
     {
@@ -31,5 +35,4 @@ class AdminNavigationItem extends Model
     {
         return $this->belongsTo(AdminNavigationItem::class, 'parent_id');
     }
-
 }

@@ -11,7 +11,6 @@ class AdminNavigationItemController extends Controller
     public function getSidenav(Request $request)
     {
         $menu = AdminNavigationItem::whereNull('parent_id')
-            ->where('is_active', true)
             ->with('children')
             ->orderBy('order', 'asc')
             ->get();
