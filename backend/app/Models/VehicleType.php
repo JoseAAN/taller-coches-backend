@@ -16,12 +16,18 @@ use OpenApi\Attributes as OA;
 class VehicleType extends Model
 {
 
-    protected $fillable = ['name'];
     #[OA\Property(format: "int64", description: "ID del tipo", example: 1)]
     private $id;
 
     #[OA\Property(description: "Nombre del tipo", example: "Turismo")]
     private $name;
+    use HasFactory;
+    protected $table = 'vehicle_types';
+    protected $fillable = [
+        'id',
+        'name',
+        'dimensions',
+    ];
 
     public function vehicles(): HasMany
     {

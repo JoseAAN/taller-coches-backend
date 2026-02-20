@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\vehicleTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminNavigationItemController;
 
 
 // Rutas Públicas
@@ -80,6 +81,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/serviceType', [ServiceTypeController::class, 'store']);
     Route::put('/serviceType', [ServiceTypeController::class, 'update']);
     Route::delete('/serviceType', [ServiceTypeController::class, 'destroy']);
+    // Admin Navigation Items
+    Route::get('/admin-navigation', [AdminNavigationItemController::class, 'getSidenav']);
+
+    
     });
 
     // Rutas Protegidas V1 (General)
@@ -129,5 +134,10 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/cart-products', [CartProductController::class, 'store']);
     Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
     Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
+
+    // Admin Navigation Items: Gestión
+    Route::post('/admin-navigation', [AdminNavigationItemController::class, 'store']);
+    Route::put('/admin-navigation/{item}', [AdminNavigationItemController::class, 'update']);
+    Route::delete('/admin-navigation/{item}', [AdminNavigationItemController::class, 'destroy']);
 
 });

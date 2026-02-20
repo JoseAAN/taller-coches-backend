@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -27,7 +28,16 @@ class Vehicle extends Model
     #[OA\Property(format: "int64", description: "ID del usuario propietario", example: 1)]
     private $user_id;
 
-    protected $fillable = ['license_plate', 'vehicle_type_id', 'user_id'];
+    use HasFactory;
+    protected $table = 'vehicles';
+    protected $fillable = [
+        'license_plate',
+        'vehicle_type_id',
+        'user_id',
+        'color',
+        'model',
+        'brand',
+    ];
 
     public function vehicleType()
     {
