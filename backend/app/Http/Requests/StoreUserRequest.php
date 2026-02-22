@@ -51,8 +51,6 @@ class StoreUserRequest extends FormRequest
         
         'captcha.required'   => 'Es necesario completar el captcha de seguridad.',
         'captcha.captcha'    => 'La validación del captcha ha fallado, inténtalo de nuevo.',
-        // Si tu paquete usa la regla 'recaptcha', cambia la línea anterior por:
-        // 'captcha.recaptcha' => 'La validación de Google indica que eres un robot.',
     ];
 }
 }
