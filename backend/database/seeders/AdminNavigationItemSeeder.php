@@ -13,19 +13,22 @@ class AdminNavigationItemSeeder extends Seeder
     public function run(): void
     {
         $father = AdminNavigationItem::factory()->create([
-            'label' => 'Test',
-            'icon'  => 'inventory_2',
+            'id' => 1,
+            'label' => 'Configuration',
+            'icon'  => 'settings',
             'route' => null,
-            'order' => 1
+            'order' => 9999,
+            'is_active' => true
         ]);
 
         // Creamos el ítem HIJO vinculado al padre
         AdminNavigationItem::factory()->create([
-            'label' => 'Product',
-            'icon'  => 'fragrance',
-            'route' => '/admin/products',
+            'label' => 'Admin sidebar configuration',
+            'icon'  => 'build_circle',
+            'route' => '/admin/admin-sidebar-configuration',
             'parent_id' => $father->id,
-            'order' => 1
+            'order' => 1,
+            'is_active' => true
         ]);
     }
 }

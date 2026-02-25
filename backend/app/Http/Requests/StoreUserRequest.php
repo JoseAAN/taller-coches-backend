@@ -32,4 +32,25 @@ class StoreUserRequest extends FormRequest
         //Nota2: el campo de "confirmed" espera un campo llamado "password_confirmation". 
         //Nota3: se añadió la validación del captcha
     }
+
+    public function messages(): array
+{
+    return [
+        'name.required'     => 'El nombre es obligatorio.',
+        'name.string'       => 'El nombre debe ser un texto válido.',
+        'name.max'          => 'El nombre no puede tener más de 255 caracteres.',
+        
+        'email.required'    => 'El correo electrónico es obligatorio.',
+        'email.email'       => 'Debes introducir un formato de email válido.',
+        'email.max'         => 'El email es demasiado largo.',
+        'email.unique'      => 'Este correo electrónico ya está registrado.',
+        
+        'password.required'  => 'La contraseña es obligatoria.',
+        'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+        'password.confirmed' => 'Las contraseñas no coinciden.',
+        
+        'captcha.required'   => 'Es necesario completar el captcha de seguridad.',
+        'captcha.captcha'    => 'La validación del captcha ha fallado, inténtalo de nuevo.',
+    ];
+}
 }
