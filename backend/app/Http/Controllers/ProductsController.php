@@ -100,6 +100,7 @@ class ProductsController extends Controller
                 'per_page' => $perPage,
                 'total' => $total,
                 'last_page' => (int) ceil($total / $perPage),
+                'path' => $request->url(), // URL base para la paginación del frontend
             ]
         ]);
     }
