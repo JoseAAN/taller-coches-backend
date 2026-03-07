@@ -15,7 +15,7 @@ use App\Http\Controllers\vehicleTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminNavigationItemController;
-
+use App\Http\Controllers\VehicleController;
 
 // Rutas Públicas
 Route::post('/login', [AuthController::class, 'login']);
@@ -84,7 +84,7 @@ Route::prefix('v1')->group(function () {
     // Admin Navigation Items
     Route::get('/admin-navigation', [AdminNavigationItemController::class, 'getSidenav']);
 
-    
+
     });
 
     // Rutas Protegidas V1 (General)
@@ -139,5 +139,10 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/admin-navigation', [AdminNavigationItemController::class, 'store']);
     Route::put('/admin-navigation/{item}', [AdminNavigationItemController::class, 'update']);
     Route::delete('/admin-navigation/{item}', [AdminNavigationItemController::class, 'destroy']);
+
+    // Vehicles: Gestión
+    Route::post('/vehicles', [VehicleController::class, 'store']);
+    Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update']);
+    Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy']);
 
 });

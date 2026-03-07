@@ -38,7 +38,7 @@ class CartController extends Controller
      */
     public function show(Cart $cart)
     {
-        return new CartResource($cart);
+        return new CartResource($cart->load('products'));
     }
 
     /**
