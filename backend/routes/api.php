@@ -87,18 +87,12 @@ Route::prefix('v1')->group(function () {
 
     });
 
-    // Rutas Protegidas V1 (General)
-    Route::middleware(['auth.token'])->prefix('v1')->group(function () {
-        // Carrito / Facturación
-        Route::apiResource('cartinvoice', CartInvoiceController::class);
-
-        // Rutas Protegidas V1 (Admin)
-
-});
 // Rutas Protegidas V1 (General)
 Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     // Carrito / Facturación
     Route::apiResource('cartinvoice', CartInvoiceController::class);
+
+    Route::get("/user-cart", [CartController::class, "getCartByUserId"]);
 });
 
 // Rutas Protegidas V1 (Admin)
@@ -131,7 +125,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::delete('/service-invoices/{id}', [ServiceInvoiceController::class, 'destroy']);
 
     // Cart Products: Gestión
-    Route::post('/cart-products', [CartProductController::class, 'store']);
+    Route::post('/addToCart', [CartProductController::class, 'store']);
     Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
     Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
 

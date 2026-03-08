@@ -19,10 +19,10 @@ class CartProductController extends Controller implements Sorter
     {
         $query = CartProduct::query();
         $this->sort(
-                $query,
-                $request,
-                ['created_at', 'priceInTime', 'totalPerProduct', 'updated_at', 'cart_id']
-            );
+            $query,
+            $request,
+            ['created_at', 'priceInTime', 'totalPerProduct', 'updated_at', 'cart_id']
+        );
         $carProducts = CartProduct::all();
         return new CartProductCollection($query->paginate(10));
     }
@@ -32,10 +32,35 @@ class CartProductController extends Controller implements Sorter
      */
     public function store(Request $request, CartProductRequest $cartProductRequest)
     {
-        $data = $cartProductRequest->validated();
-        $data['totalPerProduct'] = $this->calculateTotalPerProduct($data['quantity'], $data['priceInTime']);
-        $cartProduct = CartProduct::create($data);
-        return response()->json($cartProduct, 201);
+        try {
+            $data = $cartProductRequest->validated();
+            
+            $cartProduct = CartProduct::where('cart_id', $data['cart_id'])
+                ->where('product_id', $data['product_id'])
+                ->first();
+                $data['priceInTime'];
+
+
+                //actualizamos la cantidad y el totalperproduct
+            if ($cartProduct) {
+                $cartProduct->quantity += $data['quantity'];
+                $cartProduct->totalPerProduct = $this->calculateTotalPerProduct(
+                    $cartProduct->quantity,
+                    $data['priceInTime']
+                );
+                $cartProduct->save();
+            } else {
+                $data['totalPerProduct'] = $this->calculateTotalPerProduct(
+                    $data['quantity'],
+                    $data['priceInTime']
+                );
+                $cartProduct = CartProduct::create($data);
+            }
+            return response()->json($cartProduct, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error al añadir el producto al carrito', 'error' => $e->getMessage()], 500);
+        }
+
     }
 
     /**
@@ -81,7 +106,8 @@ class CartProductController extends Controller implements Sorter
         return $quantity * $priceInTime;
     }
 
-    public function sort($query, Request $request, array $allowedSorts, string $defaultSort = 'created_at', string $defaultOrder = 'desc'){
+    public function sort($query, Request $request, array $allowedSorts, string $defaultSort = 'created_at', string $defaultOrder = 'desc')
+    {
         $sortBy = $request->get('sort_by', $defaultSort);
         $sortOrder = $request->get('sort_order', $defaultOrder);
 
