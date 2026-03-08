@@ -39,7 +39,7 @@ Route::middleware(['auth.token'])->group(function () {
 Route::prefix('v1')->group(function () {
     // Productos: Lectura pública
     Route::get('/products', [ProductsController::class, 'index']);
-    Route::get('/products/{product}', [ProductsController::class, 'show']);
+    Route::get('/products/{id}', [ProductsController::class, 'show']);
 
     // Registro de usuarios (Público)
     Route::post('/users', [UserController::class, 'store']);
@@ -99,8 +99,8 @@ Route::middleware(['auth.token'])->prefix('v1')->group(function () {
 Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function () {
     // Productos: Gestión
     Route::post('/products', [ProductsController::class, 'store']);
-    Route::put('/products/{product}', [ProductsController::class, 'update']);
-    Route::delete('/products/{product}', [ProductsController::class, 'destroy']);
+    Route::put('/products/{id}', [ProductsController::class, 'update']);
+    Route::delete('/products/{id}', [ProductsController::class, 'destroy']);
 
     // Servicios: Gestión
     Route::post('/services', [ServiceController::class, 'store']);
