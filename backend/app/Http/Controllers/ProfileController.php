@@ -40,11 +40,10 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $validatedData = $request->validate([
-            'userId' => 'required',
-        ]);
+        $userId = $request->user()->id;
 
-        $user = User::with('role')->find($validatedData['userId']);
+
+        $user = User::with('role')->find($userId);
         if (!$user) {
             return response()->json([
                 'success' => false,
@@ -85,13 +84,25 @@ class ProfileController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request)
-    {
-         $validatedData = $request->validate([
-            'userId' => 'required',
-        ]);
+{
+    $user = $request->user();
 
+    $validatedData = $request->validate([
+        'name'    => 'sometimes|string|max:255',
+        'email'   => 'sometimes|email|unique:users,email,' . $user->id,
+        'dni'     => 'sometimes|nullable|string|max:20|unique:users,dni,' . $user->id,
+        'phone'   => 'sometimes|nullable|string|max:20',
+        'address' => 'sometimes|nullable|string|max:255',
+    ]);
 
-    }
+    $user->update($validatedData);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Perfil actualizado correctamente.',
+        'User'    => new UserResource($user)
+    ]);
+}
 
     /**
      * Remove the specified resource from storage.

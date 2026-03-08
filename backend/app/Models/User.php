@@ -47,6 +47,9 @@ class User extends Authenticatable
         'role_id',
         'password',
         'api_token', // Added manual token
+        'dni',      
+        'phone',    
+        'address',  
     ];
 
     // Relación con Rol
