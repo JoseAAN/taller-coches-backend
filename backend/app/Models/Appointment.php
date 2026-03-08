@@ -51,4 +51,9 @@ class Appointment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function service() // El tipo de servicio que se le hizo
+{
+    return $this->belongsTo(Service::class, 'service_id');
+}
 }

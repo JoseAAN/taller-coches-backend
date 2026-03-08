@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminNavigationItemController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -7,15 +8,16 @@ use App\Http\Controllers\CartInvoiceController;
 use App\Http\Controllers\CartProductController;
 use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceInvoiceController;
 use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\vehicleTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminNavigationItemController;
-use App\Http\Controllers\VehicleController;
+
 
 // Rutas Públicas
 Route::post('/login', [AuthController::class, 'login']);
@@ -37,6 +39,8 @@ Route::middleware(['auth.token'])->group(function () {
 //Esto es simplemente de prueba no es la ruta final
 // Rutas Públicas V1
 Route::prefix('v1')->group(function () {
+
+    Route::get('/Profile', [ProfileController::class, 'show']);
     // Productos: Lectura pública
     Route::get('/products', [ProductsController::class, 'index']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
