@@ -60,8 +60,8 @@ class ProductsController extends Controller
         // Agrupar para evitar duplicados cuando hay JOIN
         $sql .= " GROUP BY p.id, p.name, p.price, p.description, p.stock, p.created_at, p.updated_at";
 
-        // Ordenar por ID descendente (más recientes primero)
-        $sql .= " ORDER BY p.id DESC";
+        // Ordenar por ID ascendente
+        $sql .= " ORDER BY p.id ASC";
 
         // --- Paginación manual ---
         $perPage = 6;

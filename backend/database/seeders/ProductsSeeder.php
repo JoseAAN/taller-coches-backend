@@ -112,7 +112,15 @@ class ProductsSeeder extends Seeder
             $product->categories()->attach($category->id);
         }
 
-        // Crear algunos productos aleatorios extra para rellenar paginación (menos cantidad para no ensuciar tanto)
-        Product::factory()->count(10)->create();
+        // Crear productos aleatorios extra y asignarles categorías al azar
+        // Solo usar las 5 categorías reales (no las generadas por factory)
+        $realCategories = Category::whereIn('name', ['Limpieza', 'Aceites', 'Frenos', 'Suspensión', 'Motor'])->get();
+        $randomProducts = Product::factory()->count(10)->create();
+
+        foreach ($randomProducts as $product) {
+            // Asignar entre 1 y 2 categorías reales aleatorias a cada producto
+            $randomCats = $realCategories->random(rand(1, 2));
+            $product->categories()->attach($randomCats->pluck('id'));
+        }
     }
 }
