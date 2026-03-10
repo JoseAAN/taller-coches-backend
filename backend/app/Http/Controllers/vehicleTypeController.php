@@ -20,7 +20,7 @@ class vehicleTypeController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -37,7 +37,7 @@ class vehicleTypeController extends Controller
             ]);
 
             if (VehicleType::where('name', $request->name)->exists()) {
-                return response()->json(['message' => 'This type of vehicle already exists'], 422);
+                return response()->json(['message' => 'Este tipo de vehículo ya existe'], 422);
             } else {
                 $vehicleTypes = VehicleType::create($data);
 
@@ -45,7 +45,7 @@ class vehicleTypeController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -75,7 +75,7 @@ class vehicleTypeController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -99,7 +99,7 @@ class vehicleTypeController extends Controller
             $vehicleType->delete();
 
             return response()->json([
-                'message' => 'Vehicle type delete',
+                'message' => 'Tipo de vehículo eliminado correctamente',
             ]);
 
         } catch (\Exception $e) {

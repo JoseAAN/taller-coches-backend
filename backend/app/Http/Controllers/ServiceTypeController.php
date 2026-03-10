@@ -19,7 +19,7 @@ class ServiceTypeController extends Controller
             ]);
         }catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -36,7 +36,7 @@ class ServiceTypeController extends Controller
             ]);
 
             if (ServiceType::where('name', $request->name)->exists()) {
-                return response()->json(['message' => 'This service already exists'], 422);
+                return response()->json(['message' => 'Este tipo de servicio ya existe'], 422);
             }
 
             $ServiceType = ServiceType::create($data);
@@ -44,7 +44,7 @@ class ServiceTypeController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -64,7 +64,7 @@ class ServiceTypeController extends Controller
 
             if (!$serviceType) {
                 return response()->json([
-                    'message' => 'Service type not found'
+                    'message' => 'Tipo de servicio no encontrado'
                 ], 404);
             }
 
@@ -74,7 +74,7 @@ class ServiceTypeController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -94,19 +94,19 @@ class ServiceTypeController extends Controller
 
             if (!$serviceType) {
                 return response()->json([
-                    'message' => 'Service type not found'
+                    'message' => 'Tipo de servicio no encontrado'
                 ], 404);
             }
 
             $serviceType->delete();
 
             return response()->json([
-                'message' => 'Service type deleted successfully'
+                'message' => 'Tipo de servicio eliminado correctamente'
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error'   => $e->getMessage()
             ], 500);
         }
