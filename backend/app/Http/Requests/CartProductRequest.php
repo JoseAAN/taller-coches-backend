@@ -26,6 +26,7 @@ class CartProductRequest extends FormRequest
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|numeric',
             'priceInTime' => 'required|numeric',
+            'totalPerProduct' => 'numeric',
         ];
     }
 }

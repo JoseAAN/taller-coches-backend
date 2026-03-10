@@ -21,6 +21,7 @@ class ServiceInvoiceResource extends JsonResource
             'appointment_id' => $this->appointment_id,
             'created_at' => $this->created_at?->format('d/m/Y H:i'),
             'updated_at' => $this->updated_at?->format('d/m/Y H:i'),
+            'Appointments'=> new AppointmentResource($this->whenLoaded('appointment'))
         ];
     }
 }

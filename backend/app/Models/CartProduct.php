@@ -45,6 +45,12 @@ class CartProduct extends Pivot
         'totalPerProduct',
     ];
 
+    protected $casts = [
+        'quantity' => 'integer',
+        'priceInTime' => 'float',
+        'totalPerProduct' => 'float',
+    ];
+
     // Relación con el producto
     public function product()
     {

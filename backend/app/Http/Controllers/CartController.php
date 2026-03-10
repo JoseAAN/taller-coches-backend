@@ -84,4 +84,22 @@ class CartController extends Controller
         return response()->json(['message' => 'Carrito eliminado correctamente'], 200);
         //
     }
+
+    public function getCartByUserId(Request $request)
+    {
+        
+        $userId = $request->user()->id;
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $userId],
+            ['price' => 0]
+        );
+        
+        $cart->load('products');
+
+        if (!$cart) {
+            return response()->json(['message' => 'Carrito no encontrado para el usuario'], 404);
+        }
+
+        return new CartResource($cart);
+    }
 }

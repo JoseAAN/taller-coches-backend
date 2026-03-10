@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminNavigationItemController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -7,15 +8,16 @@ use App\Http\Controllers\CartInvoiceController;
 use App\Http\Controllers\CartProductController;
 use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceInvoiceController;
 use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\vehicleTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminNavigationItemController;
-use App\Http\Controllers\VehicleController;
+
 
 // Rutas Públicas
 Route::post('/login', [AuthController::class, 'login']);
@@ -37,6 +39,8 @@ Route::middleware(['auth.token'])->group(function () {
 //Esto es simplemente de prueba no es la ruta final
 // Rutas Públicas V1
 Route::prefix('v1')->group(function () {
+
+    Route::get('/Profile', [ProfileController::class, 'show']);
     // Productos: Lectura pública
     Route::get('/products', [ProductsController::class, 'index']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
@@ -89,18 +93,12 @@ Route::prefix('v1')->group(function () {
 
     });
 
-    // Rutas Protegidas V1 (General)
-    Route::middleware(['auth.token'])->prefix('v1')->group(function () {
-        // Carrito / Facturación
-        Route::apiResource('cartinvoice', CartInvoiceController::class);
-
-        // Rutas Protegidas V1 (Admin)
-
-});
 // Rutas Protegidas V1 (General)
 Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     // Carrito / Facturación
     Route::apiResource('cartinvoice', CartInvoiceController::class);
+
+    Route::get("/user-cart", [CartController::class, "getCartByUserId"]);
 
     // Vehicles: Lectura (usuario ve los suyos, admin ve todos)
     Route::get('/vehicles', [VehicleController::class, 'index']);
@@ -137,7 +135,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::delete('/service-invoices/{id}', [ServiceInvoiceController::class, 'destroy']);
 
     // Cart Products: Gestión
-    Route::post('/cart-products', [CartProductController::class, 'store']);
+    Route::post('/addToCart', [CartProductController::class, 'store']);
     Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
     Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
 
