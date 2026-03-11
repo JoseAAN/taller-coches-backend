@@ -39,8 +39,6 @@ Route::middleware(['auth.token'])->group(function () {
 //Esto es simplemente de prueba no es la ruta final
 // Rutas Públicas V1
 Route::prefix('v1')->group(function () {
-
-    Route::get('/Profile', [ProfileController::class, 'show']);
     // Productos: Lectura pública
     Route::get('/products', [ProductsController::class, 'index']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
@@ -90,16 +88,21 @@ Route::prefix('v1')->group(function () {
     // Admin Navigation Items
     Route::get('/admin-navigation', [AdminNavigationItemController::class, 'getSidenav']);
 
-
     });
 
 // Rutas Protegidas V1 (General)
 Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     // Carrito / Facturación
     Route::apiResource('cartinvoice', CartInvoiceController::class);
-
+    
     Route::get("/user-cart", [CartController::class, "getCartByUserId"]);
 
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+
+    Route::get('/vehicleType', [vehicleTypeController::class, 'index']);
+    Route::post('/vehicles', [VehicleController::class, 'store']);
+    Route::delete('/vehicles/{id}', [VehicleController::class, 'destroy']);
     // Vehicles: Lectura (usuario ve los suyos, admin ve todos)
     Route::get('/vehicles', [VehicleController::class, 'index']);
     Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
@@ -145,7 +148,6 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::delete('/admin-navigation/{item}', [AdminNavigationItemController::class, 'destroy']);
 
     // Vehicles: Gestión
-    Route::post('/vehicles', [VehicleController::class, 'store']);
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update']);
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy']);
 

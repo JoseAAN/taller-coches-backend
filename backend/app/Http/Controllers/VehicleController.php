@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\VehiclesResource;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
@@ -40,27 +41,37 @@ class VehicleController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        try{
-            $data = $request->validate([
-                'name' => 'required',
-            ]);
+{
+    try {
+        $data = $request->validate([
+            'license_plate'   => 'required|string|max:20|unique:vehicles,license_plate',
+            'brand'           => 'required|string|max:100',
+            'model'           => 'required|string|max:100',
+            'color'           => 'required|string|max:50',
+            'vehicle_type_id' => 'required|exists:vehicle_types,id',
+        ]);
 
-            if(Vehicle::where('name', $request->name)->exists()){
-                return response()->json(['message'=> 'Este vehículo ya existe'], 422);
-            } else {
-                $vehicle = Vehicle::create($data);
+        $data['user_id'] = $request->user()->id;
 
-                return response()->json(['message'=> 'Vehículo añadido correctamente'], 201);
-            }
+        $vehicle = Vehicle::create($data);
 
-            } catch(\Exception $e){
-                return response()->json([
-                    'message'=> 'Ha ocurrido un error',
-                    'error' => $e->getMessage(),
-                ], 500);
-            }
-        }
+        // ✅ Carga la relación para que el resource pueda acceder a vehicleType
+        $vehicle->load('vehicleType');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vehículo añadido correctamente',
+            'vehicle' => new VehiclesResource($vehicle) 
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al crear el vehículo',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
 
     /**
      * Mostrar un vehículo específico por ID.
