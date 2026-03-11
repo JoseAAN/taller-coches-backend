@@ -49,3 +49,44 @@ Las siguientes rutas están en la zona pública y podrían requerir autenticaci�
 | `POST/PUT/DELETE /v1/vehicleType` | Gestión de tipos de vehículo es pública. Debería ser solo admin. |
 | `POST/PUT/DELETE /v1/serviceType` | Gestión de tipos de servicio es pública. Debería ser solo admin. |
 | `POST/PUT/DELETE /v1/appointment` | Gestión de citas es pública. Debería requerir autenticación. |
+
+---
+
+## Método sin ruta
+
+`CartController.getCartByUserId()` (línea 88) está implementado pero no tiene ruta definida en `api.php`. No se puede acceder desde la API.
+
+---
+
+## Código muerto / innecesario
+
+| Archivo | Línea | Problema |
+|---------|-------|----------|
+| `CartController.php` | 99 | `if (!$cart)` nunca se ejecuta porque `firstOrCreate` siempre devuelve un cart. |
+| `CartProductController.php` | 26 | `$carProducts = CartProduct::all()` se asigna pero nunca se usa. Se devuelve `$query->paginate(10)` en su lugar. |
+| `CartProductController.php` | 41 | `$data['priceInTime'];` es una sentencia sin efecto (no está asignada a nada). |
+| `api.php` | 37 | Comentario obsoleto: `//Esto es simplemente de prueba no es la ruta final`. |
+
+---
+
+## Posible bug en AppointmentController
+
+En `store()` (línea 106), se usa `$request->appointment_date` para construir la fecha:
+```php
+$start = Carbon::parse($request->appointment_date.' '.$request->start_time);
+```
+Pero la validación solo pide `date` (no `appointment_date`):
+```php
+'date' => 'required|date_format:Y-m-d',
+```
+Esto podría hacer que `$start` se construya con un valor `null`, dando como resultado una fecha incorrecta. Debería ser `$request->date`.
+
+---
+
+## Comprobaciones de admin redundantes
+
+Los métodos `update()` y `destroy()` de `CartController`, `CartProductController`, `ProductInvoiceController` y `ServiceInvoiceController` comprueban manualmente si el usuario es admin:
+```php
+if ($request->user()->role->name !== 'admin') { ... }
+```
+Pero estas rutas ya están dentro del bloque `Route::middleware(['auth.token', 'auth.admin'])`, que ya hace esa comprobación. Las comprobaciones manuales son redundantes (aunque no causan errores).
