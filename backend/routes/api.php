@@ -45,6 +45,7 @@ Route::prefix('v1')->group(function () {
 
     // Registro de usuarios (Público)
     Route::post('/users', [UserController::class, 'store']);
+    Route::get('/users', [UserController::class, 'index']);
 
     // Servicios: Lectura pública
     Route::get('/services/services-home', [ServiceController::class, 'getHomeServices']);
@@ -78,6 +79,7 @@ Route::prefix('v1')->group(function () {
     Route::put('/vehicleType', [vehicleTypeController::class, 'update']);
     Route::delete('/vehicleType', [vehicleTypeController::class, 'delete']);
 
+
     //Service Types
     Route::get('/serviceType', [ServiceTypeController::class, 'index']);
     Route::post('/serviceType', [ServiceTypeController::class, 'store']);
@@ -101,6 +103,9 @@ Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     Route::get('/vehicleType', [vehicleTypeController::class, 'index']);
     Route::post('/vehicles', [VehicleController::class, 'store']);
     Route::delete('/vehicles/{id}', [VehicleController::class, 'destroy']);
+    // Vehicles: Lectura (usuario ve los suyos, admin ve todos)
+    Route::get('/vehicles', [VehicleController::class, 'index']);
+    Route::get('/vehicles/{id}', [VehicleController::class, 'show']);
 });
 
 // Rutas Protegidas V1 (Admin)
@@ -145,5 +150,10 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     // Vehicles: Gestión
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update']);
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy']);
+
+    // Users: Gestión
+    Route::get('/users/{id}', [UserController::class, 'show']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 });

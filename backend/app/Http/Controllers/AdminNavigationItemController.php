@@ -63,6 +63,6 @@ class AdminNavigationItemController extends Controller
         Cache::forget('admin_sidebar');
         $item->delete();
 
-        return response()->json(['message' => 'Navigation item deleted successfully']);
+        return response()->json(['message' => 'Elemento de navegación eliminado correctamente']);
     }
 }

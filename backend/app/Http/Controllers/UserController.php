@@ -13,11 +13,15 @@ use App\Http\Requests\StoreClienteRequest;
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listar todos los usuarios con su rol.
      */
     public function index()
     {
-        
+        $users = User::with('role')->get();
+
+        return response()->json([
+            'data' => $users,
+        ]);
     }
 
     /**
@@ -51,27 +55,64 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar un usuario específico por ID.
      */
     public function show(string $id)
     {
-        //
+        $user = User::with('role')->find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        return response()->json(['data' => $user]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualizar un usuario existente.
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        $validatedData = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255|unique:users,email,' . $id,
+            'password' => 'sometimes|string|min:8',
+            'role_id' => 'sometimes|exists:roles,id',
+        ]);
+
+        // Hashear la contraseña si se envía una nueva
+        if (isset($validatedData['password'])) {
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        }
+
+        $user->update($validatedData);
+
+        return response()->json([
+            'message' => 'Usuario actualizado correctamente',
+            'data' => $user->load('role'),
+        ]);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar un usuario.
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'Usuario eliminado correctamente']);
     }
 
     public function checkAccessToken(Request $request)

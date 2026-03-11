@@ -9,21 +9,29 @@ use Illuminate\Http\Request;
 class VehicleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listar vehículos.
+     * - Admin: ve todos los vehículos.
+     * - Usuario autenticado: ve solo sus propios vehículos.
      */
-    public function index()
+    public function index(Request $request)
     {
-        try{
+        try {
+            $user = $request->user();
 
+            if ($user->role->name === 'admin') {
+                $vehicles = Vehicle::with(['vehicleType', 'user'])->get();
+            } else {
+                $vehicles = Vehicle::with(['vehicleType'])
+                    ->where('user_id', $user->id)
+                    ->get();
+            }
 
-        $vehicles = Vehicle::all();
-
-        return response()->json([
-            'vehicles' => $vehicles,
-        ]);
+            return response()->json([
+                'data' => $vehicles,
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error ocurred',
+                'message' => 'Ha ocurrido un error',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -66,11 +74,35 @@ class VehicleController extends Controller
 }
 
     /**
-     * Display the specified resource.
+     * Mostrar un vehículo específico por ID.
+     * - Admin: puede ver cualquier vehículo.
+     * - Usuario autenticado: solo puede ver sus propios vehículos.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        //
+        try {
+            $vehicle = Vehicle::with(['vehicleType', 'user'])->find($id);
+
+            if (!$vehicle) {
+                return response()->json([
+                    'message' => 'Vehículo no encontrado',
+                ], 404);
+            }
+
+            $user = $request->user();
+            if ($user->role->name !== 'admin' && $vehicle->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'No tienes permiso para ver este vehículo',
+                ], 403);
+            }
+
+            return response()->json(['data' => $vehicle]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ha ocurrido un error',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -88,14 +120,14 @@ class VehicleController extends Controller
 
             if (! $vehicle) {
                 return response()->json([
-                    'message' => 'Vehicle not Found',
+                    'message' => 'Vehículo no encontrado',
                 ], 404);
             }
             $vehicle->update(['license_plate' => $request->license_plate]);
             return response()->json($vehicle);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -111,18 +143,18 @@ class VehicleController extends Controller
 
             if (!$vehicle) {
                 return response()->json([
-                    'message' => 'Vehicle not Found',
+                    'message' => 'Vehículo no encontrado',
                 ], 404);
             }
 
             $vehicle->delete();
 
             return response()->json([
-                'message' => 'Vehicle deleted successfully',
+                'message' => 'Vehículo eliminado correctamente',
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'An error occurred',
+                'message' => 'Ha ocurrido un error',
                 'error' => $e->getMessage(),
             ], 500);
         }
