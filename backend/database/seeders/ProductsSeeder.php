@@ -21,7 +21,7 @@ class ProductsSeeder extends Seeder
                 'name' => 'Champú Coche Ultra Brillo (500ml)',
                 'description' => 'Champú concentrado con pH neutro. Genera mucha espuma y deja un acabado brillante sin dañar la cera existente.',
                 'price' => 12.50,
-                'stock' => 50,
+                'stock' => 2,
                 'category' => 'Limpieza',
             ],
             [
@@ -67,7 +67,7 @@ class ProductsSeeder extends Seeder
                 'name' => 'Líquido de Frenos DOT 4 (500ml)',
                 'description' => 'Fluido sintético de alto punto de ebullición para sistemas de frenos hidráulicos y embragues.',
                 'price' => 8.95,
-                'stock' => 40,
+                'stock' => 2,
                 'category' => 'Frenos',
             ],
 
@@ -76,7 +76,7 @@ class ProductsSeeder extends Seeder
                 'name' => 'Amortiguador de Gas Trasero',
                 'description' => 'Amortiguador bitubo de presión de gas. Restaura el control y la estabilidad original del vehículo.',
                 'price' => 65.00,
-                'stock' => 12,
+                'stock' => 1,
                 'category' => 'Suspensión',
             ],
 

@@ -88,14 +88,19 @@ Route::prefix('v1')->group(function () {
     // Admin Navigation Items
     Route::get('/admin-navigation', [AdminNavigationItemController::class, 'getSidenav']);
 
-    });
+});
 
 // Rutas Protegidas V1 (General)
 Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     // Carrito / Facturación
+    Route::post('/product-invoices', [ProductInvoiceController::class, 'store']);
+    Route::get('/product-invoices/by-cart/{cartId}', [ProductInvoiceController::class, 'getByCart']);
     Route::apiResource('cartinvoice', CartInvoiceController::class);
-    
+
     Route::get("/user-cart", [CartController::class, "getCartByUserId"]);
+    Route::post('/addToCart', [CartProductController::class, 'store']);
+    Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
+    Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
 
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
@@ -128,7 +133,6 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
 
 
     // Facturas de productos: Gestión
-    Route::post('/product-invoices', [ProductInvoiceController::class, 'store']);
     Route::put('/product-invoices/{id}', [ProductInvoiceController::class, 'update']);
     Route::delete('/product-invoices/{id}', [ProductInvoiceController::class, 'destroy']);
 
@@ -137,10 +141,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/service-invoices/{id}', [ServiceInvoiceController::class, 'update']);
     Route::delete('/service-invoices/{id}', [ServiceInvoiceController::class, 'destroy']);
 
-    // Cart Products: Gestión
-    Route::post('/addToCart', [CartProductController::class, 'store']);
-    Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
-    Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
+
 
     // Admin Navigation Items: Gestión
     Route::post('/admin-navigation', [AdminNavigationItemController::class, 'store']);

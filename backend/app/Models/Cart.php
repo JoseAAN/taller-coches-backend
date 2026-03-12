@@ -38,7 +38,7 @@ class Cart extends Model
 	{
 		return $this->belongsToMany(Product::class, 'carts_products')
             ->using(CartProduct::class)
-            ->withPivot('quantity', 'priceInTime', 'totalPerProduct')
+            ->withPivot('id', 'quantity', 'priceInTime', 'totalPerProduct')
             ->withTimestamps();
 	}
 
@@ -46,4 +46,9 @@ class Cart extends Model
 	{
 		return $this->belongsTo(User::class);
 	}
+
+    public function productInvoice()
+    {
+        return $this->hasOne(ProductInvoice::class, 'cart_id');
+    }
 }

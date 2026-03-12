@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\interfaces\Sorter;
 use Illuminate\Http\Request;
 use App\Models\ProductInvoice;
+use App\Models\Cart;
 use App\Http\Resources\ProductInvoiceResource;
 use App\Http\Resources\ProductInvoiceCollection;
 use App\Interfaces\CheckInvoiceFormat;
@@ -47,9 +48,9 @@ class ProductInvoiceController extends Controller implements Sorter, CheckInvoic
         ]);
 
         
+        // Ensure invoice_number is generated
+        $data['invoice_number'] = ProductInvoice::generateInvoiceNumber();
         $productInvoice = ProductInvoice::create($data);
-
-        //VAlidación de formato de invoice_number
         $formatCheck = $this->validateInvoiceFormat($productInvoice->invoice_number);
         if (!$formatCheck['valid']) {
             return response()->json([
@@ -57,7 +58,36 @@ class ProductInvoiceController extends Controller implements Sorter, CheckInvoic
             ], 403);
         }
 
+        // Reduce stock from products
+        $cart = Cart::with('products')->find($data['cart_id']);
+        if ($cart) {
+            foreach ($cart->products as $product) {
+                // Ensure stock doesn't go below 0
+                $purchasedQty = $product->pivot->quantity;
+                $product->stock = max(0, $product->stock - $purchasedQty);
+                $product->save();
+            }
+        }
+
         return new ProductInvoiceResource($productInvoice);
+    }
+
+    /**
+     * Get the invoice by cart ID for the authenticated user.
+     */
+    public function getByCart(Request $request, $cartId)
+    {
+        $userId = $request->user()->id;
+        
+        $invoice = ProductInvoice::whereHas('cart', function($query) use ($userId, $cartId) {
+            $query->where('user_id', $userId)->where('id', $cartId);
+        })->first();
+
+        if (!$invoice) {
+            return response()->json(['message' => 'No se encontraron facturas para este carrito'], 404);
+        }
+
+        return new ProductInvoiceResource($invoice);
     }
 
     /**

@@ -38,12 +38,21 @@ class CartProductController extends Controller implements Sorter
             $cartProduct = CartProduct::where('cart_id', $data['cart_id'])
                 ->where('product_id', $data['product_id'])
                 ->first();
-                $data['priceInTime'];
 
+            $product = \App\Models\Product::findOrFail($data['product_id']);
+            $currentQuantity = $cartProduct ? $cartProduct->quantity : 0;
+            $newTotalQuantity = $currentQuantity + $data['quantity'];
 
-                //actualizamos la cantidad y el totalperproduct
+            if ($newTotalQuantity > $product->stock) {
+                return response()->json([
+                    'message' => "Stock insuficiente. Solo quedan {$product->stock} unidades disponibles.",
+                    'available_stock' => $product->stock
+                ], 400);
+            }
+
+            //actualizamos la cantidad y el totalperproduct
             if ($cartProduct) {
-                $cartProduct->quantity += $data['quantity'];
+                $cartProduct->quantity = $newTotalQuantity;
                 $cartProduct->totalPerProduct = $this->calculateTotalPerProduct(
                     $cartProduct->quantity,
                     $data['priceInTime']
@@ -56,6 +65,16 @@ class CartProductController extends Controller implements Sorter
                 );
                 $cartProduct = CartProduct::create($data);
             }
+            
+            // Recalcular total del carrito
+            $cart = \App\Models\Cart::find($cartProduct->cart_id);
+            if ($cart) {
+                $cart->price = $cart->products->sum(function ($p) {
+                    return $p->pivot->totalPerProduct;
+                });
+                $cart->save();
+            }
+
             return response()->json($cartProduct, 201);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al añadir el producto al carrito', 'error' => $e->getMessage()], 500);
@@ -75,16 +94,36 @@ class CartProductController extends Controller implements Sorter
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id, CartProductRequest $cartProductRequest)
+    public function update(Request $request, string $id)
     {
-        //
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
         $cartProduct = CartProduct::findOrFail($id);
-        $data = $cartProductRequest->validated();
+
+        $data = $request->validate([
+            'quantity' => 'required|numeric|min:1',
+            'priceInTime' => 'required|numeric',
+        ]);
+
+        $product = \App\Models\Product::findOrFail($cartProduct->product_id);
+
+        if ($data['quantity'] > $product->stock) {
+            return response()->json([
+                'message' => "Stock insuficiente. Solo quedan {$product->stock} unidades disponibles.",
+                'available_stock' => $product->stock
+            ], 400);
+        }
+
         $data['totalPerProduct'] = $this->calculateTotalPerProduct($data['quantity'], $data['priceInTime']);
         $cartProduct->update($data);
+
+        // Recalcular total del carrito
+        $cart = Cart::find($cartProduct->cart_id);
+        if ($cart) {
+            $cart->price = $cart->products->sum(function ($p) {
+                return $p->pivot->totalPerProduct;
+            });
+            $cart->save();
+        }
+
         return response()->json($cartProduct);
     }
 
@@ -93,12 +132,20 @@ class CartProductController extends Controller implements Sorter
      */
     public function destroy(Request $request, string $id)
     {
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
         $cartProduct = CartProduct::findOrFail($id);
+        $cartId = $cartProduct->cart_id;
         $cartProduct->delete();
-        return response()->json(['message' => 'Producto eliminado del carrito'], 204);
+
+        // Recalcular total del carrito
+        $cart = Cart::find($cartId);
+        if ($cart) {
+            $cart->price = $cart->products->sum(function ($p) {
+                return $p->pivot->totalPerProduct;
+            });
+            $cart->save();
+        }
+
+        return response()->json(['message' => 'Producto eliminado del carrito'], 200);
     }
 
     private function calculateTotalPerProduct($quantity, $priceInTime)

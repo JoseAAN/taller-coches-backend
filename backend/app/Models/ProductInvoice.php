@@ -11,7 +11,13 @@ use OpenApi\Attributes as OA;
     schema: "ProductInvoice",
     required: ["total", "cart_id"],
     title: "Factura de Productos",
-    description: "Factura generada por la compra de productos"
+    description: "Factura generada por la compra de productos",
+    properties: [
+        new OA\Property(property: "id", format: "int64", description: "ID de la factura", example: 1),
+        new OA\Property(property: "invoice_number", description: "Número de factura (PINV-XXXXX)", example: "PINV-00001"),
+        new OA\Property(property: "total", format: "float", description: "Total de la factura", example: 150.00),
+        new OA\Property(property: "cart_id", format: "int64", description: "ID del carrito asociado", example: 1)
+    ]
 )]
 class ProductInvoice extends Model
 {
@@ -19,19 +25,8 @@ class ProductInvoice extends Model
     
     protected $table = 'product_invoices';
 
-    #[OA\Property(format: "int64", description: "ID de la factura", example: 1)]
-    private $id;
-
-    #[OA\Property(description: "Número de factura (PINV-XXXXX)", example: "PINV-00001")]
-    private $invoice_number;
-
-    #[OA\Property(format: "float", description: "Total de la factura", example: 150.00)]
-    private $total;
-
-    #[OA\Property(format: "int64", description: "ID del carrito asociado", example: 1)]
-    private $cart_id;
-
     protected $fillable = [
+        'invoice_number',
         'total',
         'cart_id',
     ];

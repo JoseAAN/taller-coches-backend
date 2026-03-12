@@ -35,6 +35,7 @@ class ServiceInvoice extends Model
     private $appointment_id;
 
     protected $fillable = [
+        'invoice_number',
         'user_id',
         'total',
         'appointment_id'

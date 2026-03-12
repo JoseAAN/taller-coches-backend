@@ -20,7 +20,15 @@ class ProductsResource extends JsonResource
             'price' => $this->price,
             'description' => $this->description,
             'stock' => $this->stock,
-            'categories' => $this->categories->pluck('name'), // Retorna solo los nombres de las categorías
+            'categories' => $this->categories->pluck('name'),
+            'pivot' => $this->whenPivotLoaded('carts_products', function () {
+                return [
+                    'id' => $this->pivot->id,
+                    'quantity' => $this->pivot->quantity,
+                    'priceInTime' => $this->pivot->priceInTime,
+                    'totalPerProduct' => $this->pivot->totalPerProduct,
+                ];
+            }),
         ];
     }
 }

@@ -89,10 +89,19 @@ class CartController extends Controller
     {
         
         $userId = $request->user()->id;
-        $cart = Cart::firstOrCreate(
-            ['user_id' => $userId],
-            ['price' => 0]
-        );
+        
+        // Find a cart for this user that hasn't been invoiced yet
+        $cart = Cart::where('user_id', $userId)
+            ->doesntHave('productInvoice')
+            ->first();
+
+        // If no active cart exists, create a new one
+        if (!$cart) {
+            $cart = Cart::create([
+                'user_id' => $userId,
+                'price' => 0
+            ]);
+        }
         
         $cart->load('products');
 

@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             AdminNavigationItemSeeder::class,
             VehicleTypeSeeder::class,
             VehiclesSeeder::class,
-
+            DemoUserSeeder::class,
         ]);
     }
 }
