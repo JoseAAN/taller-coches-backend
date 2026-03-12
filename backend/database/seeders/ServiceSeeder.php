@@ -16,13 +16,14 @@ class ServiceSeeder extends Seeder
         $detail = ServiceType::create(['name' => 'Detallado y Tratamientos']);
 
         // 2. Crear Servicios (Vinculados a los tipos)
-        
+
         // --- Exterior ---
         Service::create([
             'name' => 'Lavado a Mano Básico',
             'description' => 'Lavado exterior con champú pH neutro, secado manual y limpieza de llantas superficial.',
             'price' => 15.00,
             'average_duration' => 30, // minutos
+            'image' => 'services/lavado-basico.jpg',
             'service_type_id' => $exterior->id,
         ]);
 

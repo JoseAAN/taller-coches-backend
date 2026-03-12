@@ -45,6 +45,7 @@ class Service extends Model
         'description',
         'service_type_id',
         'show_on_home',
+        'image',
     ];
 
     public function serviceType()
