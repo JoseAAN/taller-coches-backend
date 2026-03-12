@@ -12,23 +12,23 @@ class AdminNavigationItemSeeder extends Seeder
      */
     public function run(): void
     {
-        $father = AdminNavigationItem::factory()->create([
-            'id' => 1,
-            'label' => 'Configuration',
-            'icon'  => 'settings',
-            'route' => null,
-            'order' => 9999,
-            'is_active' => true
-        ]);
+        $items = [
+            // --- PADRES (solamente desplegables) ---
+            ['id' => 1, 'label' => 'Products', 'icon' => 'inventory_2', 'route' => null, 'parent_id' => null, 'order' => 1],
+            ['id' => 3, 'label' => 'Services', 'icon' => 'inventory_2', 'route' => null, 'parent_id' => null, 'order' => 2],
+            ['id' => 5, 'label' => 'Configuration', 'icon' => 'build', 'route' => null, 'parent_id' => null, 'order' => 9999],
 
-        // Creamos el ítem HIJO vinculado al padre
-        AdminNavigationItem::factory()->create([
-            'label' => 'Admin sidebar configuration',
-            'icon'  => 'build_circle',
-            'route' => '/admin/admin-sidebar-configuration',
-            'parent_id' => $father->id,
-            'order' => 1,
-            'is_active' => true
-        ]);
+            // --- HIJOS ---
+            ['id' => 2, 'label' => 'Product', 'icon' => 'home_repair_service', 'route' => '/admin/products', 'parent_id' => 1, 'order' => 1],
+            ['id' => 4, 'label' => 'Service Home View', 'icon' => 'home_repair_service', 'route' => '/admin/service-home-edit', 'parent_id' => 3, 'order' => 1],
+            ['id' => 6, 'label' => 'Admin sidebar configuration', 'icon' => 'build_circle', 'route' => '/admin/admin-sidebar-configuration', 'parent_id' => 5, 'order' => 1],
+            ['id' => 24, 'label' => 'Test config', 'icon' => 'settings', 'route' => '/admin/testing', 'parent_id' => 5, 'order' => 0],
+        ];
+
+        foreach ($items as $item) {
+            AdminNavigationItem::factory()->create(array_merge($item, [
+                'is_active' => true
+            ]));
+        }
     }
 }
