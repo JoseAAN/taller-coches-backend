@@ -16,6 +16,7 @@ class CartProductResource extends JsonResource
     {
         return [
             'id'               => $this->id,
+            'pivot_id'         => $this->pivot->id,
             'name'             => $this->name,
             'description'      => $this->description,
             'categories'       => $this->categories->pluck('name'),

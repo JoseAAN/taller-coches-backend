@@ -98,6 +98,7 @@ Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     Route::apiResource('cartinvoice', CartInvoiceController::class);
 
     Route::get("/user-cart", [CartController::class, "getCartByUserId"]);
+    Route::get('/carts/{cart}', [CartController::class, 'show']);
     Route::post('/addToCart', [CartProductController::class, 'store']);
     Route::put('/cart-products/{id}', [CartProductController::class, 'update']);
     Route::delete('/cart-products/{id}', [CartProductController::class, 'destroy']);
