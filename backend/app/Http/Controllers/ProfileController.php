@@ -65,12 +65,20 @@ class ProfileController extends Controller
             ->with(['appointment.vehicle', 'appointment.service'])
             ->get();
             
+            $appointments = Appointment::whereHas('vehicle', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->where('appointment_date', '>=', now())
+            ->with('vehicle', 'service')
+            ->get();
+
             return response()->json([
                 'success' => true,
                 'User' => new UserResource($user),
                 'vehicles' => VehiclesResource::collection($vehicles),
                 'CartInvoices' => CartInvoiceResource::collection($CartInvoices ),
-                'ServiceInvoices' => ServiceInvoiceResource::collection(  $serviceInvoices)
+                'ServiceInvoices' => ServiceInvoiceResource::collection(  $serviceInvoices),
+                'Appointments' => AppointmentResource::collection($appointments)
             ]);
         }else{
             return response()->json([
@@ -78,6 +86,8 @@ class ProfileController extends Controller
                 'message' => 'No tienes permisos.'
             ], 404);
         }
+
+
     }
 
     /**
