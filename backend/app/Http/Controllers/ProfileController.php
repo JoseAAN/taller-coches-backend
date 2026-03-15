@@ -11,6 +11,7 @@ use App\Http\Resources\VehiclesResource;
 use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\CartInvoice;
+use App\Models\ProductInvoice;
 use App\Models\Service;
 use App\Models\ServiceInvoice;
 use App\Models\User;
@@ -54,9 +55,11 @@ class ProfileController extends Controller
         //if($user->role->name == 'client'){
             $vehicles = Vehicle::with('vehicleType')->where('user_id', $user->id)->get();
             
-           $CartInvoices = CartInvoice::whereHas('cart', function($query) use ($user) {
+           $CartInvoices = ProductInvoice::whereHas('cart', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })->with('cart.products') ->get();
+
+            
 
            $serviceInvoices = ServiceInvoice::whereHas('appointment.vehicle', function($query) use ($user) {
                 $query->where('user_id', $user->id);
