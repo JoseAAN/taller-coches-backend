@@ -64,7 +64,7 @@ class ProductsController extends Controller
         $sql .= " ORDER BY p.id ASC";
 
         // --- Paginación manual ---
-        $perPage = 6;
+        $perPage = 12;
         $page = max(1, (int) $request->get('page', 1));
         $offset = ($page - 1) * $perPage;
 
