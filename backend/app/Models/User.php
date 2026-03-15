@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 use OpenApi\Attributes as OA;
 
@@ -18,7 +17,7 @@ use OpenApi\Attributes as OA;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     #[OA\Property(format: "int64", description: "ID del usuario", example: 1)]
     private $id;

@@ -43,8 +43,9 @@ class UserController extends Controller
         // Crear usuario
         $user = User::create($userData);
 
-        // Crear token
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Generar token manual
+        $token = \Illuminate\Support\Str::random(60);
+        $user->forceFill(['api_token' => $token])->save();
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente',
