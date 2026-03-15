@@ -51,7 +51,7 @@ class ProfileController extends Controller
             ], 404);
         }
        
-        if($user->role->name == 'client'){
+        //if($user->role->name == 'client'){
             $vehicles = Vehicle::with('vehicleType')->where('user_id', $user->id)->get();
             
            $CartInvoices = CartInvoice::whereHas('cart', function($query) use ($user) {
@@ -80,12 +80,12 @@ class ProfileController extends Controller
                 'ServiceInvoices' => ServiceInvoiceResource::collection(  $serviceInvoices),
                 'Appointments' => AppointmentResource::collection($appointments)
             ]);
-        }else{
+      /*   }else{
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos.'
             ], 404);
-        }
+        } */
 
 
     }
