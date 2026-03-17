@@ -4,16 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AppointmentResource;
-use App\Http\Resources\CartInvoiceResource;
-use App\Http\Resources\ServiceInvoiceResource;
+use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\VehiclesResource;
 use App\Models\Appointment;
 use App\Models\Cart;
-use App\Models\CartInvoice;
-use App\Models\ProductInvoice;
-use App\Models\Service;
-use App\Models\ServiceInvoice;
+use App\Models\Invoice;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
@@ -55,18 +51,18 @@ class ProfileController extends Controller
         //if($user->role->name == 'client'){
             $vehicles = Vehicle::with('vehicleType')->where('user_id', $user->id)->get();
             
-           $CartInvoices = ProductInvoice::whereHas('cart', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })->with('cart.products') ->get();
+            // Facturas que vienen de carritos (compras)
+            $cartInvoices = Invoice::where('user_id', $user->id)
+                ->whereNotNull('cart_id')
+                ->with(['cart.items.itemProduct.product', 'cart.items.type'])
+                ->get();
 
-            
-
-           $serviceInvoices = ServiceInvoice::whereHas('appointment.vehicle', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            // Carga la cita y, de forma anidada, el vehículo y el servicio asociado a esa cita
-            ->with(['appointment.vehicle', 'appointment.service'])
-            ->get();
+            // Facturas que vienen de citas directas
+            $serviceInvoices = Invoice::where('user_id', $user->id)
+                ->whereNotNull('appointment_id')
+                ->whereNull('cart_id')
+                ->with(['appointment.vehicle', 'appointment.service'])
+                ->get();
             
             $appointments = Appointment::whereHas('vehicle', function($query) use ($user) {
                 $query->where('user_id', $user->id);
@@ -79,8 +75,8 @@ class ProfileController extends Controller
                 'success' => true,
                 'User' => new UserResource($user),
                 'vehicles' => VehiclesResource::collection($vehicles),
-                'CartInvoices' => CartInvoiceResource::collection($CartInvoices ),
-                'ServiceInvoices' => ServiceInvoiceResource::collection(  $serviceInvoices),
+                'CartInvoices' => InvoiceResource::collection($cartInvoices),
+                'ServiceInvoices' => InvoiceResource::collection($serviceInvoices),
                 'Appointments' => AppointmentResource::collection($appointments)
             ]);
       /*   }else{

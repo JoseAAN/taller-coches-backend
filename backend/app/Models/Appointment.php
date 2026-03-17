@@ -40,10 +40,10 @@ class Appointment extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    // Relacion con la factura de servicios
+    // Relacion con la factura unificada
     public function invoice()
     {
-        return $this->hasOne(ServiceInvoice::class);
+        return $this->hasOne(Invoice::class);
     }
 
     // Relacion con el usuario

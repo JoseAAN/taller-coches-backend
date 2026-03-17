@@ -18,10 +18,10 @@ class Order extends Model
 
     protected $guarded = [];
 
-    // Relacion con la factura de productos
+    // Relacion con la factura unificada
     public function invoice()
     {
-        return $this->hasOne(ProductInvoice::class);
+        return $this->hasOne(Invoice::class);
     }
 
     public function user() {

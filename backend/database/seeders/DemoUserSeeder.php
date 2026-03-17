@@ -10,20 +10,13 @@ use App\Models\VehicleType;
 use App\Models\Service;
 use App\Models\Appointment;
 use App\Models\Cart;
-use App\Models\Product;
-use App\Models\ProductInvoice;
-use App\Models\ServiceInvoice;
+use App\Models\Invoice;
 use Illuminate\Support\Carbon;
 
 class DemoUserSeeder extends Seeder
 {
     /**
-     * Crea un usuario de demostración con todos los datos relacionados:
-     * - 2 vehículos
-     * - 2 citas (una pasada, una futura)
-     * - 1 carrito con productos
-     * - 1 factura de productos
-     * - 1 factura de servicios
+     * Crea un usuario de demostración con todos los datos relacionados utilizando el nuevo sistema de factura unificada.
      */
     public function run(): void
     {
@@ -85,21 +78,21 @@ class DemoUserSeeder extends Seeder
             'final_price' => $servicePulido->price,
         ]);
 
-        // Factura de productos (usando un carrito existente del CartSeeder)
-        $existingCart = Cart::whereHas('products')->first();
+        // Factura de compra (usando un carrito existente del CartSeeder)
+        $existingCart = Cart::whereHas('items')->first();
         if ($existingCart) {
-            ProductInvoice::create([
-                'invoice_number' => ProductInvoice::generateInvoiceNumber(),
+            Invoice::factory()->create([
                 'total' => $existingCart->price,
                 'cart_id' => $existingCart->id,
+                'user_id' => $demoUser->id,
             ]);
         }
 
-        // Factura de servicios (asociada a la cita pasada)
-        ServiceInvoice::create([
-            'invoice_number' => ServiceInvoice::generateInvoiceNumber(),
+        // Factura de servicio directo (asociada a la cita pasada)
+        Invoice::factory()->create([
             'total' => $serviceLavado->price,
             'appointment_id' => $citaPasada->id,
+            'user_id' => $demoUser->id,
         ]);
     }
 }

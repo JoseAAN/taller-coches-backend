@@ -37,12 +37,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            ItemTypeSeeder::class,
             CategoriesSeeder::class,
             ProductsSeeder::class,
             ServiceSeeder::class,
             CartSeeder::class,
-            ProductInvoiceSeeder::class,
-            //ServiceInvoiceSeeder::class
+            InvoiceSeeder::class,
             AdminNavigationItemSeeder::class,
             VehicleTypeSeeder::class,
             VehiclesSeeder::class,

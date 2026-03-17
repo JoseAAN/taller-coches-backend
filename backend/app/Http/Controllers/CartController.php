@@ -15,7 +15,7 @@ class CartController extends Controller
      */
     public function index()
     {
-        $carts = Cart::with('products')->get();
+        $carts = Cart::with('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type')->get();
         return new CartCollection($carts);
     }
 
@@ -38,7 +38,7 @@ class CartController extends Controller
      */
     public function show(Cart $cart)
     {
-        return new CartResource($cart->load('products'));
+        return new CartResource($cart->load('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type'));
     }
 
     /**
@@ -92,7 +92,7 @@ class CartController extends Controller
         
         // Find a cart for this user that hasn't been invoiced yet
         $cart = Cart::where('user_id', $userId)
-            ->doesntHave('productInvoice')
+            ->doesntHave('invoice')
             ->first();
 
         // If no active cart exists, create a new one
@@ -103,7 +103,7 @@ class CartController extends Controller
             ]);
         }
         
-        $cart->load('products');
+        $cart->load('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type');
 
         if (!$cart) {
             return response()->json(['message' => 'Carrito no encontrado para el usuario'], 404);

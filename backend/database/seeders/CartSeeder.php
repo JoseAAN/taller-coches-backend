@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Models\Item;
+use App\Models\ItemType;
+use App\Models\ItemProduct;
 use Illuminate\Database\Seeder;
 
 class CartSeeder extends Seeder
@@ -22,17 +25,27 @@ class CartSeeder extends Seeder
 
             foreach ($randomProducts as $product) {
                 $quantity = rand(1, 5);
-                $priceAtMoment = $product->price; //Cogemos el precio actual del producto
+                $priceAtMoment = $product->price;
 
-                // Insertamos en la tabla intermedia cart_product
-                $cart->products()->attach($product->id, [
+                // 1. Crear el Item general (Tipo PRODUCT)
+                $item = Item::create([
+                    'cart_id' => $cart->id,
+                    'item_type_id' => ItemType::PRODUCT,
                     'quantity' => $quantity,
-                    'priceInTime' => $priceAtMoment,
-                    'totalPerProduct' => $quantity * $priceAtMoment,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'price_at_time' => $priceAtMoment,
+                    'subtotal' => $quantity * $priceAtMoment,
+                ]);
+
+                // 2. Crear la relación específica con el producto
+                ItemProduct::create([
+                    'item_id' => $item->id,
+                    'product_id' => $product->id,
                 ]);
             }
+
+            // Actualizar el precio total del carrito
+            $cart->price = $cart->items()->sum('subtotal');
+            $cart->save();
         });
     }
 }

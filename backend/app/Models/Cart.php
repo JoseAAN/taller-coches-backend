@@ -34,21 +34,18 @@ class Cart extends Model
         'price',
     ];
 
-	public function products()
-	{
-		return $this->belongsToMany(Product::class, 'carts_products')
-            ->using(CartProduct::class)
-            ->withPivot('id', 'quantity', 'priceInTime', 'totalPerProduct')
-            ->withTimestamps();
-	}
+    public function items()
+    {
+        return $this->hasMany(Item::class);
+    }
 
     	public function user()
 	{
 		return $this->belongsTo(User::class);
 	}
 
-    public function productInvoice()
+    public function invoice()
     {
-        return $this->hasOne(ProductInvoice::class, 'cart_id');
+        return $this->hasOne(Invoice::class, 'cart_id');
     }
 }
