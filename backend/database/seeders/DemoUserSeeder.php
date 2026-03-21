@@ -91,7 +91,6 @@ class DemoUserSeeder extends Seeder
         // Factura de servicio directo (asociada a la cita pasada)
         Invoice::factory()->create([
             'total' => $serviceLavado->price,
-            'appointment_id' => $citaPasada->id,
             'user_id' => $demoUser->id,
         ]);
     }

@@ -17,9 +17,7 @@ return new class extends Migration
             $table->decimal('total', 10, 2);
             
             // Relaciones opcionales
-            $table->foreignId('cart_id')->nullable()->constrained('carts')->onDelete('set null');
-            $table->foreignId('appointment_id')->nullable()->constrained('appointments')->onDelete('set null');
-            
+            $table->foreignId('cart_id')->nullable()->constrained('carts')->onDelete('set null'); 
             // El usuario que paga (aunque ya esté en cart o appointment, es bueno tenerlo directo)
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             

@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Invoice;
 use App\Models\Cart;
-use App\Models\Appointment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,8 +20,7 @@ class InvoiceFactory extends Factory
             'invoice_number' => 'INV-' . $this->faker->unique()->numberBetween(10000, 99999),
             'total' => $this->faker->randomFloat(2, 20, 500),
             'user_id' => User::inRandomOrder()->first()?->id ?? User::factory()->create(['role_id' => 2])->id,
-            'cart_id' => null,
-            'appointment_id' => null,
+            'cart_id' => null
         ];
     }
 
@@ -36,13 +34,4 @@ class InvoiceFactory extends Factory
         ]);
     }
 
-    /**
-     * State for appointment-based invoices.
-     */
-    public function fromAppointment(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'appointment_id' => Appointment::factory(),
-        ]);
-    }
 }

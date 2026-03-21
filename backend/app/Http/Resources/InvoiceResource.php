@@ -15,34 +15,51 @@ class InvoiceResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id'             => $this->id,
             'invoice_number' => $this->invoice_number,
-            // Soporte para frontend viejo (checkout-success esperaba invoice_number en snake_case pero luego lo busqué por camelCase en perfil)
-            'invoiceNumber' => $this->invoice_number, 
-            'total' => $this->total,
-            'cart_id' => $this->cart_id,
-            'appointment_id' => $this->appointment_id,
-            'user_id' => $this->user_id,
-            'created_at' => $this->created_at?->format('d/m/Y H:i'),
-            'updated_at' => $this->updated_at?->format('d/m/Y H:i'),
-            
-            // Detalles del carrito (si existe)
-            'cart' => new CartResource($this->whenLoaded('cart')),
-            
-            // Detalles de la cita (si existe)
-            'appointment' => new AppointmentResource($this->whenLoaded('appointment')),
-            
-            // Para compatibilidad con el perfil ("products")
-            'products' => $this->whenLoaded('cart', function () {
+            'invoiceNumber'  => $this->invoice_number,
+            'total'          => $this->total,
+            'cart_id'        => $this->cart_id,
+            'user_id'        => $this->user_id,
+            'created_at'     => $this->created_at?->format('d/m/Y H:i'),
+            'updated_at'     => $this->updated_at?->format('d/m/Y H:i'),
+
+            'items' => $this->whenLoaded('cart', function () {
                 return $this->cart->items->map(function ($item) {
-                    $target = $item->target;
+
+                    // Es un PRODUCTO
+                    if ($item->itemProduct && $item->itemProduct->product) {
+                        $product = $item->itemProduct->product;
+                        return [
+                            'type'       => 'product',
+                            'id'         => $product->id,
+                            'name'       => $product->name,
+                            'categories' => $product->categories->pluck('name'),
+                            'price'      => $item->price_at_time,
+                            'quantity'   => $item->quantity,
+                            'subtotal'   => $item->subtotal,
+                        ];
+                    }
+
+                    // Es una CITA
+                    if ($item->itemAppointment && $item->itemAppointment->appointment) {
+                        $appointment = $item->itemAppointment->appointment;
+                        return [
+                            'type'             => 'appointment',
+                            'id'               => $appointment->id,
+                            'service'          => $appointment->service?->name,
+                            'appointment_date' => $appointment->appointment_date?->format('d/m/Y H:i'),
+                            'vehicle'          => $appointment->vehicle?->license_plate ?? $appointment->vehicle?->model,
+                            'price'            => $item->price_at_time,
+                            'quantity'         => $item->quantity,
+                            'subtotal'         => $item->subtotal,
+                        ];
+                    }
+
+                    // Fallback
                     return [
-                        'id' => $target?->id,
-                        'name' => $target?->name ?? 'Concepto desconocido',
-                        'price' => $item->price_at_time,
-                        'categories' => ($item->item_type_id == \App\Models\ItemType::PRODUCT && $target)
-                                        ? $target->categories->pluck('name') 
-                                        : [$item->type->name],
+                        'type'     => 'unknown',
+                        'price'    => $item->price_at_time,
                         'quantity' => $item->quantity,
                         'subtotal' => $item->subtotal,
                     ];

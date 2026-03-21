@@ -20,18 +20,12 @@ class Invoice extends Model
         'invoice_number',
         'total',
         'cart_id',
-        'appointment_id',
         'user_id',
     ];
 
     public function cart()
     {
         return $this->belongsTo(Cart::class);
-    }
-
-    public function appointment()
-    {
-        return $this->belongsTo(Appointment::class);
     }
 
     public function user()

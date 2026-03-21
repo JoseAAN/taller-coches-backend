@@ -51,19 +51,16 @@ class ProfileController extends Controller
         //if($user->role->name == 'client'){
             $vehicles = Vehicle::with('vehicleType')->where('user_id', $user->id)->get();
             
-            // Facturas que vienen de carritos (compras)
-            $cartInvoices = Invoice::where('user_id', $user->id)
-                ->whereNotNull('cart_id')
-                ->with(['cart.items.itemProduct.product', 'cart.items.type'])
-                ->get();
+            // Modelo Factura
+            $Invoice = Invoice::with([
+                'cart.items.itemProduct.product.categories',
+                'cart.items.itemAppointment.appointment.vehicle',
+                'cart.items.itemAppointment.appointment.service',
+                'cart.items.itemAppointment.appointment.user',
+            ])
+            ->where('user_id', $userId)
+            ->get();
 
-            // Facturas que vienen de citas directas
-            $serviceInvoices = Invoice::where('user_id', $user->id)
-                ->whereNotNull('appointment_id')
-                ->whereNull('cart_id')
-                ->with(['appointment.vehicle', 'appointment.service'])
-                ->get();
-            
             $appointments = Appointment::whereHas('vehicle', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
@@ -71,14 +68,13 @@ class ProfileController extends Controller
             ->with('vehicle', 'service')
             ->get();
 
-            return response()->json([
-                'success' => true,
-                'User' => new UserResource($user),
-                'vehicles' => VehiclesResource::collection($vehicles),
-                'CartInvoices' => InvoiceResource::collection($cartInvoices),
-                'ServiceInvoices' => InvoiceResource::collection($serviceInvoices),
-                'Appointments' => AppointmentResource::collection($appointments)
-            ]);
+           return response()->json([
+            'success' => true,
+            'User' => new UserResource($user),
+            'Invoices' => InvoiceResource::collection($Invoice),
+            'vehicles' => VehiclesResource::collection($vehicles),
+            'Appointments' => AppointmentResource::collection($appointments)
+        ]);
       /*   }else{
             return response()->json([
                 'success' => false,
