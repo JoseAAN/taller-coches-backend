@@ -22,8 +22,6 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Rutas Protegidas (Token Manual)
 Route::middleware(['auth.token'])->group(function () {
-    // Cerrar Sesión
-    Route::post('/logout', [AuthController::class, 'logout']);
 
     // Obtener información del usuario
     Route::get('/user', function (Request $request) {
@@ -79,6 +77,9 @@ Route::prefix('v1')->group(function () {
 
 // Rutas Protegidas V1 (General)
 Route::middleware(['auth.token'])->prefix('v1')->group(function () {
+    // Cerrar Sesión
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     // Facturación Unificada
     Route::post('/invoices', [InvoiceController::class, 'store']);
     Route::get('/invoices/by-cart/{cartId}', [InvoiceController::class, 'getByCart']);
