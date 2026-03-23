@@ -5,6 +5,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartItemController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProfileController;
@@ -34,6 +35,10 @@ Route::prefix('v1')->group(function () {
     // Productos: Lectura pública
     Route::get('/products', [ProductsController::class, 'index']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
+
+    // CAtegorias: Lectura pública
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
 
     // Registro de usuarios (Público)
     Route::post('/users', [UserController::class, 'store']);
@@ -107,6 +112,11 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::post('/products', [ProductsController::class, 'store']);
     Route::put('/products/{id}', [ProductsController::class, 'update']);
     Route::delete('/products/{id}', [ProductsController::class, 'destroy']);
+
+    // Categorias: Gestión
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 
     // Servicios: Gestión
     Route::post('/services', [ServiceController::class, 'store']);
