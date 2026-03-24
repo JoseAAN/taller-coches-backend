@@ -29,6 +29,10 @@ class EnsureTokenIsValid
             return response()->json(['message' => 'Token inválido.'], 401);
         }
 
+        if ($user->blocked) {
+            return response()->json(['message' => 'Tu cuenta ha sido bloqueada. Contacta con el administrador.'], 403);
+        }
+
         // Login manual del usuario para esta petición
         Auth::setUser($user);
 

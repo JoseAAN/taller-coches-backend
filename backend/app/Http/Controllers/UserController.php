@@ -116,6 +116,28 @@ class UserController extends Controller
         return response()->json(['message' => 'Usuario eliminado correctamente']);
     }
 
+    /**
+     * Bloquear o desbloquear un usuario.
+     */
+    public function toggleBlock(string $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        $user->blocked = !$user->blocked;
+        $user->save();
+
+        $estado = $user->blocked ? 'bloqueado' : 'desbloqueado';
+
+        return response()->json([
+            'message' => "Usuario {$estado} correctamente",
+            'data'    => $user->load('role'),
+        ]);
+    }
+
     public function checkAccessToken(Request $request)
     {
         $token = $request->bearerToken();

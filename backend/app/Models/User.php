@@ -45,10 +45,13 @@ class User extends Authenticatable
         'email',
         'role_id',
         'password',
-        'api_token', // Added manual token
-        'dni',      
-        'phone',    
-        'address',  
+        'api_token',
+        'dni',
+        'phone',
+        'address',
+        'blocked',
+        'login_attempts',
+        'unblock_time',
     ];
 
     // Relación con Rol
