@@ -72,6 +72,7 @@ Route::prefix('v1')->group(function () {
 
     // Service Types
     Route::get('/serviceType', [ServiceTypeController::class, 'index']);
+    Route::get('/serviceType/{id}', [ServiceTypeController::class, 'show']);
     
 
     // Admin Navigation Items
