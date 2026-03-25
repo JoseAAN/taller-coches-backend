@@ -39,8 +39,8 @@ class ServiceTypeController extends Controller
                 return response()->json(['message' => 'Este tipo de servicio ya existe'], 422);
             }
 
-            $ServiceType = ServiceType::create($data);
-            return response()->json(['message' => 'ServiceType add successfully'], 201);
+            $serviceType = ServiceType::create($data);
+            return response()->json($serviceType, 201);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -50,17 +50,9 @@ class ServiceTypeController extends Controller
         }
     }
 
-    public function show(string $id){}
-
-    public function update(Request $request)
-    {
+    public function show(string $id){
         try {
-            $request->validate([
-                'serviceTypeId' => 'required',
-                'name'          => 'required|string'
-            ]);
-
-            $serviceType = ServiceType::find($request->serviceTypeId);
+            $serviceType = ServiceType::find($id);
 
             if (!$serviceType) {
                 return response()->json([
@@ -68,7 +60,32 @@ class ServiceTypeController extends Controller
                 ], 404);
             }
 
-            $serviceType->update(['name' => $request->name]);
+            return response()->json($serviceType, 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ha ocurrido un error',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $serviceType = ServiceType::find($id);
+
+            if (!$serviceType) {
+                return response()->json([
+                    'message' => 'Tipo de servicio no encontrado'
+                ], 404);
+            }
+
+            $data = $request->validate([
+                'name' => 'required|string|max:255'
+            ]);
+
+            $serviceType->update($data);
 
             return response()->json($serviceType, 200);
 
@@ -83,14 +100,10 @@ class ServiceTypeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request)
+    public function destroy(Request $request, $id)
     {
         try {
-            $request->validate([
-                'serviceTypeId' => 'required',
-            ]);
-
-            $serviceType = ServiceType::find($request->serviceTypeId);
+            $serviceType = ServiceType::find($id);
 
             if (!$serviceType) {
                 return response()->json([
