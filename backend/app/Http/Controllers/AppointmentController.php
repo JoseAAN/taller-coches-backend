@@ -103,7 +103,7 @@ class AppointmentController extends Controller
 
             // Construimos DateTime completos el dia y la hora de inicio
             $start = Carbon::parse(
-                $request->appointment_date.' '.$request->start_time
+                $request->date.' '.$request->start_time
             );
 
             $end = $start->copy()->addMinutes($durationMinutes);

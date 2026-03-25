@@ -25,8 +25,8 @@ class ItemResource extends JsonResource
             'subtotal' => $this->subtotal,
             'details' => [
                 'id' => $target->id,
-                'name' => $target->name,
-                'description' => $target->description,
+                'name' => $this->item_type_id == ItemType::PRODUCT ? $target->name : ($target->service->name ?? 'Servicio'),
+                'description' => $this->item_type_id == ItemType::PRODUCT ? $target->description : ($target->service->description ?? ''),
                 // Si es un producto, añadimos stock e imágenes
                 'stock' => $this->item_type_id == ItemType::PRODUCT ? $target->stock : null,
             ],
