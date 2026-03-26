@@ -107,6 +107,8 @@ Route::middleware(['auth.token'])->prefix('v1')->group(function () {
 
 // Rutas Protegidas V1 (Admin)
 Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function () {
+    // Dashboard Stats
+    Route::get('/dashboard-stats', [\App\Http\Controllers\DashboardController::class, 'getStats']);
     // Productos: Gestión
     Route::post('/products', [ProductsController::class, 'store']);
     Route::put('/products/{id}', [ProductsController::class, 'update']);
