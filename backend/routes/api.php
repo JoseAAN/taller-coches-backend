@@ -72,9 +72,8 @@ Route::prefix('v1')->group(function () {
 
     // Service Types
     Route::get('/serviceType', [ServiceTypeController::class, 'index']);
-    Route::post('/serviceType', [ServiceTypeController::class, 'store']);
-    Route::put('/serviceType', [ServiceTypeController::class, 'update']);
-    Route::delete('/serviceType', [ServiceTypeController::class, 'destroy']);
+    Route::get('/serviceType/{id}', [ServiceTypeController::class, 'show']);
+    
 
     // Admin Navigation Items
     Route::get('/admin-navigation', [AdminNavigationItemController::class, 'getSidenav']);
@@ -123,6 +122,11 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/services/{service}', [ServiceController::class, 'update']);
     Route::delete('/services/{service}', [ServiceController::class, 'destroy']);
     Route::post('/services/{service}/toggle-home', [ServiceController::class, 'toggleShowOnHome']);
+
+    // Service types
+    Route::post('/serviceType', [ServiceTypeController::class, 'store']);
+    Route::put('/serviceType/{id}', [ServiceTypeController::class, 'update']);
+    Route::delete('/serviceType/{id}', [ServiceTypeController::class, 'destroy']);
 
     // Carts: Gestión
     Route::post('/carts', [CartController::class, 'store']);
