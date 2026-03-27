@@ -23,32 +23,47 @@ class DashboardController extends Controller
         $newUsersThisWeek = User::where('created_at', '>=', Carbon::now()->startOfWeek())->count();
 
         // Productos sin stock
-        $outOfStockProducts = Product::where('stock', '<=', 0)->count();
+        $outOfStockList = Product::where('stock', '<=', 0)->select('id', 'name', 'stock', 'price')->get();
+        $outOfStockProductsCount = $outOfStockList->count();
 
         // Ingresos de los últimos 7 días (para la gráfica)
-        $revenueLast7Days = [];
         $labels = [];
-        $data = [];
+        $dataRevenue = [];
+        $dataUsers = [];
+        $dataAppointments = [];
 
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $labels[] = $date->format('d/m');
             
-            // Sumar el total de las facturas de ese dia
+            // Ingresos
             $dailyTotal = Invoice::whereDate('created_at', $date)->sum('total');
-            $data[] = (float) $dailyTotal;
+            $dataRevenue[] = (float) $dailyTotal;
+
+            // Usuarios nuevos
+            $dailyUsers = User::whereDate('created_at', $date)->count();
+            $dataUsers[] = $dailyUsers;
+
+            // Citas
+            $dailyAppointments = Appointment::whereDate('created_at', $date)->count();
+            $dataAppointments[] = $dailyAppointments;
         }
 
         return response()->json([
             'cards' => [
                 'appointments_today' => $appointmentsToday,
                 'new_users_week' => $newUsersThisWeek,
-                'out_of_stock' => $outOfStockProducts,
-                'today_revenue' => $data[count($data) - 1]
+                'out_of_stock' => $outOfStockProductsCount,
+                'out_of_stock_list' => $outOfStockList,
+                'today_revenue' => $dataRevenue[count($dataRevenue) - 1]
             ],
             'chart' => [
                 'labels' => $labels,
-                'data' => $data
+                'datasets' => [
+                    'revenue' => $dataRevenue,
+                    'users' => $dataUsers,
+                    'appointments' => $dataAppointments
+                ]
             ]
         ]);
     }

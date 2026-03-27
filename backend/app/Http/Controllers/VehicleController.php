@@ -49,14 +49,22 @@ class VehicleController extends Controller
             'model'           => 'required|string|max:100',
             'color'           => 'required|string|max:50',
             'vehicle_type_id' => 'required|exists:vehicle_types,id',
+            'user_id'         => 'sometimes|nullable|exists:users,id'
         ]);
 
-        $data['user_id'] = $request->user()->id;
+        $user = $request->user();
+
+        // Si es admin y envía user_id, usa ese. Si no, usa el del admin o cliente actual.
+        if ($user->role->name === 'admin' && $request->has('user_id') && $request->filled('user_id')) {
+            $data['user_id'] = $request->input('user_id');
+        } else {
+            $data['user_id'] = $user->id;
+        }
 
         $vehicle = Vehicle::create($data);
 
-        // ✅ Carga la relación para que el resource pueda acceder a vehicleType
-        $vehicle->load('vehicleType');
+        // Carga la relación para que el resource pueda acceder a vehicleType y user
+        $vehicle->load(['vehicleType', 'user']);
 
         return response()->json([
             'success' => true,
@@ -111,19 +119,40 @@ class VehicleController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            $request->validate([
-                'id'=>'required',
-                'license_plate'=>'required'
-            ]);
-
-            $vehicle = Vehicle::find($request->id);
+            $vehicle = Vehicle::find($id);
 
             if (! $vehicle) {
                 return response()->json([
                     'message' => 'Vehículo no encontrado',
                 ], 404);
             }
-            $vehicle->update(['license_plate' => $request->license_plate]);
+
+            $user = $request->user();
+            if ($user->role->name !== 'admin' && $vehicle->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'No tienes permiso para actualizar este vehículo',
+                ], 403);
+            }
+
+            $data = $request->validate([
+                'license_plate'   => 'sometimes|required|string|max:20|unique:vehicles,license_plate,' . $vehicle->id,
+                'brand'           => 'sometimes|required|string|max:100',
+                'model'           => 'sometimes|required|string|max:100',
+                'color'           => 'sometimes|required|string|max:50',
+                'vehicle_type_id' => 'sometimes|required|exists:vehicle_types,id',
+                'user_id'         => 'sometimes|nullable|exists:users,id'
+            ]);
+
+            if ($user->role->name === 'admin' && $request->has('user_id') && $request->filled('user_id')) {
+                $data['user_id'] = $request->input('user_id');
+            } else {
+                // If not admin, strictly ignore the user_id that might be in $data implicitly
+                unset($data['user_id']); 
+            }
+
+            $vehicle->update($data);
+            $vehicle->load(['vehicleType', 'user']);
+
             return response()->json($vehicle);
         } catch (\Exception $e) {
             return response()->json([
@@ -136,7 +165,7 @@ class VehicleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         try {
             $vehicle = Vehicle::find($id);
@@ -145,6 +174,13 @@ class VehicleController extends Controller
                 return response()->json([
                     'message' => 'Vehículo no encontrado',
                 ], 404);
+            }
+
+            $user = $request->user();
+            if ($user->role->name !== 'admin' && $vehicle->user_id !== $user->id) {
+                return response()->json([
+                    'message' => 'No tienes permiso para eliminar este vehículo',
+                ], 403);
             }
 
             $vehicle->delete();
