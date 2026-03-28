@@ -238,4 +238,60 @@ class AppointmentController extends Controller
             return response()->json(['message' => 'Error general'], 500);
         }
     }
+
+    /**
+     * Display a listing of all appointments for admin.
+     */
+    public function adminIndex(Request $request)
+    {
+        try {
+            $query = Appointment::with([
+                'vehicle.user',
+                'service'
+            ]);
+
+            if ($request->has('date')) {
+                $query->whereDate('appointment_date', $request->date);
+            }
+
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $appointments = $query->orderBy('appointment_date', 'asc')->get();
+
+            return response()->json([
+                'data' => $appointments
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error fetching appointments'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update the status of an appointment.
+     */
+    public function updateStatus(Request $request, int $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,completed,cancelled'
+        ]);
+
+        try {
+            $appointment = Appointment::findOrFail($id);
+            $appointment->status = $request->status;
+            $appointment->save();
+
+            return response()->json([
+                'message' => 'Estado actualizado correctamente',
+                'data' => $appointment
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Cita no encontrada'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error interno al actualizar estado'], 500);
+        }
+    }
 }

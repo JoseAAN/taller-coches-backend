@@ -152,4 +152,8 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::post('/users/{id}/toggle-block', [UserController::class, 'toggleBlock']);
+
+    // Citas: Gestión Admin
+    Route::get('/appointments/all', [AppointmentController::class, 'adminIndex']);
+    Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
 });
