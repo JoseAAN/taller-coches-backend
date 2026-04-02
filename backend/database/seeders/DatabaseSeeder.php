@@ -26,13 +26,13 @@ class DatabaseSeeder extends Seeder
         User::create([
             'name' => 'Admin User',
             'email' => 'admin@admin.com',
-            'password' => bcrypt('1234'),
+            'password' => bcrypt('admin1234'),
             'role_id' => $adminRole->id, // Asignar ID
         ]);
 
         // Crear 9 Usuarios CLIENTE (podemos crear más si queremos)
         User::factory(9)->create([
-            'password' => bcrypt('1234'),
+            'password' => bcrypt('client1234'),
             'role_id' => $clientRole->id, // Asignar ID
         ]);
 
