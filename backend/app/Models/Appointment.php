@@ -26,6 +26,7 @@ class Appointment extends Model
         'appointment_date',
         'end_time',
         'final_price',
+        'status',
     ];
 
     protected $casts = [

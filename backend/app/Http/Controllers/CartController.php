@@ -87,22 +87,23 @@ class CartController extends Controller
 
     public function getCartByUserId(Request $request)
     {
-        
+
         $userId = $request->user()->id;
-        
+
         // Find a cart for this user that hasn't been invoiced yet
         $cart = Cart::where('user_id', $userId)
             ->doesntHave('invoice')
             ->first();
 
-        // If no active cart exists, create a new one
+        //! Metodo innecesario, comentado temporalmente para pruebas (If no active cart exists, create a new one)
+        /*
         if (!$cart) {
             $cart = Cart::create([
                 'user_id' => $userId,
                 'price' => 0
             ]);
         }
-        
+        */
         $cart->load('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type');
 
         if (!$cart) {

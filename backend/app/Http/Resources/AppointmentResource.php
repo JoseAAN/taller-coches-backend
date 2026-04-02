@@ -15,6 +15,7 @@ class AppointmentResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'vehicle' => new VehiclesResource($this->whenLoaded('vehicle')),
             'service' => new ServiceResource($this->whenLoaded('service')),
             'appointment_date' => $this->appointment_date,

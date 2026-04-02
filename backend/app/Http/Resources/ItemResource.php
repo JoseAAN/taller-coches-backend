@@ -17,6 +17,17 @@ class ItemResource extends JsonResource
     {
         $target = $this->target;
 
+         if (!$target) {
+        return [
+            'id' => $this->id,
+            'type' => $this->type->name ?? null,
+            'quantity' => $this->quantity,
+            'price_at_time' => $this->price_at_time,
+            'subtotal' => $this->subtotal,
+            'details' => null,
+        ];
+    }
+
         return [
             'id' => $this->id,
             'type' => $this->type->name,

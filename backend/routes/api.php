@@ -14,12 +14,17 @@ use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\vehicleTypeController;
+use App\Http\Controllers\MailTestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
 // Rutas Públicas
 Route::post('/login', [AuthController::class, 'login']);
+
+// Envío de correos
+// el middlewhare hará que solo se puedan mandar 5 peticiones por minuto por cada IP aunque habría que tener en cuenta más securización
+Route::post('/contact', [MailTestController::class, 'receiveContact'])->middleware('throttle:5,1');
 
 // Rutas Protegidas (Token Manual)
 Route::middleware(['auth.token'])->group(function () {
@@ -152,4 +157,8 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
     Route::post('/users/{id}/toggle-block', [UserController::class, 'toggleBlock']);
+
+    // Citas: Gestión Admin
+    Route::get('/appointments/all', [AppointmentController::class, 'adminIndex']);
+    Route::patch('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
 });
