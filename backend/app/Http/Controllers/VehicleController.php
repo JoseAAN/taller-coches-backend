@@ -44,7 +44,7 @@ class VehicleController extends Controller
 {
     try {
         $data = $request->validate([
-            'license_plate'   => 'required|string|max:20|unique:vehicles,license_plate',
+            'license_plate'   => 'required|string|max:20',
             'brand'           => 'required|string|max:100',
             'model'           => 'required|string|max:100',
             'color'           => 'required|string|max:50',
@@ -135,7 +135,7 @@ class VehicleController extends Controller
             }
 
             $data = $request->validate([
-                'license_plate'   => 'sometimes|required|string|max:20|unique:vehicles,license_plate,' . $vehicle->id,
+                'license_plate'   => 'sometimes|required|string|max:20',
                 'brand'           => 'sometimes|required|string|max:100',
                 'model'           => 'sometimes|required|string|max:100',
                 'color'           => 'sometimes|required|string|max:50',
