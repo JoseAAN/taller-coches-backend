@@ -37,11 +37,13 @@ class Item extends Model
     }
 
     // Helper para obtener el objeto real (Producto o Cita)
-    public function getTargetAttribute()
-    {
-        if ($this->item_type_id == ItemType::PRODUCT) {
-            return $this->itemProduct->product;
-        }
-        return $this->itemAppointment->appointment;
+   public function getTargetAttribute()
+{
+    if ($this->item_type_id == ItemType::PRODUCT) {
+        return $this->itemProduct?->product ?? null;  // 👈 null safe operator
+    } elseif ($this->item_type_id == ItemType::SERVICE) {
+        return $this->itemAppointment?->appointment ?? null;  // 👈 null safe operator
     }
+    return null;
+}
 }
