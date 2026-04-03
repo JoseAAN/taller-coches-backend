@@ -7,6 +7,7 @@ use App\Http\Resources\CartCollection;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class CartController extends Controller
 {
@@ -36,8 +37,12 @@ class CartController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Cart $cart)
+    public function show(Request $request, Cart $cart)
     {
+        if ($this->userCannotAccessCart($request, $cart)) {
+            return response()->json(['message' => 'No tienes permisos para acceder a este carrito.'], Response::HTTP_FORBIDDEN);
+        }
+
         return new CartResource($cart->load('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type'));
     }
 
@@ -46,10 +51,6 @@ class CartController extends Controller
      */
     public function update(Request $request, string $id)
     {
-
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
 
         $data = $request->validate([
             'user_id' => 'sometimes|exists:users,id',
@@ -71,9 +72,6 @@ class CartController extends Controller
     */
     public function destroy(Request $request, int $id)
     {
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
         $cart = Cart::find($id);
 
         if (!$cart) {
@@ -109,5 +107,20 @@ class CartController extends Controller
         }
 
         return new CartResource($cart);
+    }
+
+    private function userCannotAccessCart(Request $request, Cart $cart): bool
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return true;
+        }
+
+        if ($user->role?->name === 'admin') {
+            return false;
+        }
+
+        return (int) $cart->user_id !== (int) $user->id;
     }
 }

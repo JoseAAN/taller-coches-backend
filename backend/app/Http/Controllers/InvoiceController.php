@@ -18,12 +18,17 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
      */
     public function index(Request $request)
     {
-        $query = Invoice::query();
+        $query = Invoice::with('user');
 
-        // Buscador por número de factura
+        // Buscador por número de factura o nombre de usuario
         if ($request->has('search')) {
             $searchTerm = '%' . $request->search . '%';
-            $query->where('invoice_number', 'like', $searchTerm);
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('invoice_number', 'like', $searchTerm)
+                  ->orWhereHas('user', function($uQuery) use ($searchTerm) {
+                      $uQuery->where('name', 'like', $searchTerm);
+                  });
+            });
         }
 
         $this->sort(
@@ -56,7 +61,7 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
                 throw new \Exception($formatCheck['message']);
             }
 
-            // Si viene de un carrito, procesamos stock y limpiamos
+           
             if (isset($data['cart_id'])) {
                 $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
                 if ($cart) {
@@ -69,7 +74,6 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
                             }
                         }
                     }
-                    // No borramos items, el sistema los archiva al tener factura vinculada
                 }
             }
 
@@ -100,7 +104,7 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
      */
     public function show(string $id)
     {
-        $invoice = Invoice::with(['cart.items.itemProduct.product', 'cart.items.type', 'appointment'])->find($id);
+        $invoice = Invoice::with(['cart.items.itemProduct.product', 'cart.items.type', 'cart.items.itemAppointment.appointment', 'user'])->find($id);
         if (!$invoice) {
             return response()->json(['message' => 'Factura no encontrada'], 404);
         }
@@ -112,9 +116,6 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
      */
     public function update(Request $request, string $id)
     {
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
 
         $data = $request->validate([
             'invoice_number' => 'sometimes|string|unique:invoices,invoice_number,' . $id,
@@ -135,9 +136,6 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
      */
     public function destroy(string $id, Request $request)
     {
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
 
         $invoice = Invoice::find($id);
         if (!$invoice) {

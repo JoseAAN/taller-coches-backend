@@ -141,13 +141,18 @@ class AppointmentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(int $appointmentId)
+    public function show(Request $request, int $appointmentId)
     {
         try {
             $appointment = Appointment::with([
                 'vehicle.vehicleType',
                 'vehicle.user',
             ])->findOrFail($appointmentId);
+
+            $user = $request->user();
+            if ($user->role->name !== 'admin' && $appointment->vehicle->user_id !== $user->id) {
+                return response()->json(['message' => 'No tienes permiso para ver esta cita'], 403);
+            }
 
             return response()->json([
                 'appointmentId' => $appointment->id,
@@ -178,7 +183,13 @@ class AppointmentController extends Controller
 
         try {
 
-            $appointment = Appointment::findOrFail($appointmentId);
+            $appointment = Appointment::with('vehicle')->findOrFail($appointmentId);
+            
+            $user = $request->user();
+            if ($user->role->name !== 'admin' && $appointment->vehicle->user_id !== $user->id) {
+                return response()->json(['message' => 'No tienes permiso para editar esta cita'], 403);
+            }
+
             $service = Service::findOrFail($request->service_id);
 
             // Calculamos tiempos
@@ -225,10 +236,16 @@ class AppointmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int $appointmentId)
+    public function destroy(Request $request, int $appointmentId)
     {
         try {
-            $appointment = Appointment::findOrFail($appointmentId);
+            $appointment = Appointment::with('vehicle')->findOrFail($appointmentId);
+
+            $user = $request->user();
+            if ($user->role->name !== 'admin' && $appointment->vehicle->user_id !== $user->id) {
+                return response()->json(['message' => 'No tienes permiso para eliminar esta cita'], 403);
+            }
+
             $appointment->delete();
 
             return response()->json(['message' => 'Éxito'], 200);

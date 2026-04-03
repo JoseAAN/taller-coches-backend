@@ -56,6 +56,29 @@ class UserController extends Controller
     }
 
     /**
+     * Store a newly created resource in storage (Desde lado Administrador)
+     */
+    public function adminStore(Request $request)
+    {
+        // Se valida aparte porque desde el admin pedimos cosas específicas
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'role_id' => 'required|exists:roles,id'
+        ]);
+
+        $validatedData['password'] = Hash::make($validatedData['password']);
+        
+        $user = User::create($validatedData);
+
+        return response()->json([
+            'message' => 'Usuario registrado exitosamente',
+            'user' => $user->load('role'),
+        ], 201);
+    }
+
+    /**
      * Mostrar un usuario específico por ID.
      */
     public function show(string $id)
@@ -75,9 +98,20 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         $user = User::find($id);
+        $requestUser = $request->user();
 
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        // Nadie Edita al ID 1
+        if ($user->id === 1 && $requestUser->id !== 1) {
+            return response()->json(['message' => 'No puedes alterar al Usuario Principal.'], 403);
+        }
+
+        // Un admin normal no puede editar a OTRO admin
+        if ($user->role->name === 'admin' && $requestUser->id !== 1 && $user->id !== $requestUser->id) {
+            return response()->json(['message' => 'No tienes permisos para modificar a otro administrador.'], 403);
         }
 
         $validatedData = $request->validate([
@@ -106,9 +140,19 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         $user = User::find($id);
+        $requestUser = request()->user();
 
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        
+        if ($user->id === 1) {
+            return response()->json(['message' => 'El Usuario Principal no puede ser eliminado.'], 403);
+        }
+
+        if ($user->role->name === 'admin' && $requestUser->id !== 1) {
+            return response()->json(['message' => 'No tienes permisos para eliminar a otro administrador.'], 403);
         }
 
         $user->delete();
@@ -122,9 +166,17 @@ class UserController extends Controller
     public function toggleBlock(string $id)
     {
         $user = User::find($id);
+        $requestUser = request()->user();
 
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        if ($user->id === 1) {
+            return response()->json(['message' => 'No puedes bloquear al usuario principal.'], 403);
+        }
+        if ($user->role->name === 'admin' && $requestUser->id !== 1) {
+            return response()->json(['message' => 'No tienes permisos para bloquear a otro administrador.'], 403);
         }
 
         $user->blocked = !$user->blocked;

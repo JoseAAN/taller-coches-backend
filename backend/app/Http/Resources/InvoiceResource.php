@@ -21,6 +21,7 @@ class InvoiceResource extends JsonResource
             'total'          => $this->total,
             'cart_id'        => $this->cart_id,
             'user_id'        => $this->user_id,
+            'user_name'      => $this->whenLoaded('user', fn() => $this->user->name),
             'created_at'     => $this->created_at?->format('d/m/Y H:i'),
             'updated_at'     => $this->updated_at?->format('d/m/Y H:i'),
 

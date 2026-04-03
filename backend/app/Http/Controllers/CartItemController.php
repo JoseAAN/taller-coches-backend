@@ -7,10 +7,9 @@ use App\Models\Item;
 use App\Models\ItemType;
 use App\Models\ItemProduct;
 use App\Models\ItemAppointment;
-use App\Models\Product;
-use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response;
 
 class CartItemController extends Controller
 {
@@ -30,6 +29,12 @@ class CartItemController extends Controller
 
         return DB::transaction(function () use ($request) {
             $cartId = $request->cart_id;
+            $cart = Cart::with('user.role')->findOrFail($cartId);
+
+            if ($this->userCannotAccessCart($request, $cart)) {
+                return response()->json(['message' => 'No tienes permisos para modificar este carrito.'], Response::HTTP_FORBIDDEN);
+            }
+
             $typeId = $request->item_type_id;
             $targetId = ($typeId == ItemType::PRODUCT) ? $request->product_id : $request->appointment_id;
             $quantity = $request->quantity;
@@ -69,11 +74,15 @@ class CartItemController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $item = Item::findOrFail($id);
+        $item = Item::with('cart.user.role')->findOrFail($id);
 
         $request->validate([
             'quantity' => 'required|numeric|min:1',
         ]);
+
+        if ($this->userCannotAccessItem($request, $item)) {
+            return response()->json(['message' => 'No tienes permisos para modificar este item.'], Response::HTTP_FORBIDDEN);
+        }
 
         $item->quantity = $request->quantity;
         $item->subtotal = $item->quantity * $item->price_at_time;
@@ -89,7 +98,13 @@ class CartItemController extends Controller
      */
     public function destroy(string $id)
     {
-        $item = Item::findOrFail($id);
+        $request = request();
+        $item = Item::with('cart.user.role')->findOrFail($id);
+
+        if ($this->userCannotAccessItem($request, $item)) {
+            return response()->json(['message' => 'No tienes permisos para modificar este item.'], Response::HTTP_FORBIDDEN);
+        }
+
         $cartId = $item->cart_id;
         $item->delete();
 
@@ -105,5 +120,29 @@ class CartItemController extends Controller
             $cart->price = $cart->items()->sum('subtotal');
             $cart->save();
         }
+    }
+
+    private function userCannotAccessCart(Request $request, Cart $cart): bool
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return true;
+        }
+
+        if ($user->role?->name === 'admin') {
+            return false;
+        }
+
+        return (int) $cart->user_id !== (int) $user->id;
+    }
+
+    private function userCannotAccessItem(Request $request, Item $item): bool
+    {
+        if (!$item->relationLoaded('cart')) {
+            $item->load('cart.user.role');
+        }
+
+        return $this->userCannotAccessCart($request, $item->cart);
     }
 }
