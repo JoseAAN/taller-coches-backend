@@ -30,7 +30,7 @@ class Product extends Model
 
     #[OA\Property(format: "int64", description: "Stock disponible", example: 100)]
     private $stock;
-    
+
     protected $fillable = [
         'id',
         'name',
@@ -42,6 +42,11 @@ class Product extends Model
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'products_categories');
+    }
+
+    public function images()
+    {
+        return $this->belongsToMany(Image::class, 'product_images')->withTimestamps();
     }
 
 

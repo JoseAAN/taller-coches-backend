@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Image; // <-- NUEVO: Importamos el modelo de la imagen
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -14,15 +15,16 @@ class ProductsSeeder extends Seeder
      */
     public function run(): void
     {
-        // Definimos una lista de productos con su categoría correspondiente
+        // Definimos una lista de productos con su categoría y su imagen
         $products = [
-            // --- Limpieza (Conservando algunos) ---
+            // --- Limpieza ---
             [
                 'name' => 'Champú Coche Ultra Brillo (500ml)',
                 'description' => 'Champú concentrado con pH neutro. Genera mucha espuma y deja un acabado brillante sin dañar la cera existente.',
                 'price' => 12.50,
                 'stock' => 2,
                 'category' => 'Limpieza',
+                'image_url' => 'Champu.png',
             ],
             [
                 'name' => 'Cera Líquida Premium (Spray 500ml)',
@@ -30,6 +32,7 @@ class ProductsSeeder extends Seeder
                 'price' => 18.99,
                 'stock' => 30,
                 'category' => 'Limpieza',
+                'image_url' => 'Cera_premium.png',
             ],
             [
                 'name' => 'Limpiador de Llantas Extremo',
@@ -37,15 +40,17 @@ class ProductsSeeder extends Seeder
                 'price' => 14.25,
                 'stock' => 45,
                 'category' => 'Limpieza',
+                'image_url' => 'Limpiador_llantas.png',
             ],
-            
-            // --- Aceites (Nuevos) ---
+
+            // --- Aceites ---
             [
                 'name' => 'Aceite Sintético 5W-30 Long Life (5L)',
                 'description' => 'Aceite de motor totalmente sintético de alto rendimiento. Protege contra el desgaste y mejora la eficiencia del combustible.',
                 'price' => 45.90,
                 'stock' => 20,
                 'category' => 'Aceites',
+                'image_url' => 'Aceite_motor.png',
             ],
             [
                 'name' => 'Filtro de Aceite Universal',
@@ -53,15 +58,18 @@ class ProductsSeeder extends Seeder
                 'price' => 10.50,
                 'stock' => 100,
                 'category' => 'Aceites',
+                'image_url' => 'Filtro_aceite.png',
+
             ],
 
-            // --- Frenos (Nuevos) ---
+            // --- Frenos ---
             [
                 'name' => 'Juego de Pastillas de Freno Delanteras',
                 'description' => 'Pastillas de compuesto cerámico. Frenada silenciosa, baja generación de polvo y excelente mordida en frío y caliente.',
                 'price' => 35.00,
                 'stock' => 15,
                 'category' => 'Frenos',
+                'image_url' => 'Pastillas_freno.png',
             ],
             [
                 'name' => 'Líquido de Frenos DOT 4 (500ml)',
@@ -69,24 +77,27 @@ class ProductsSeeder extends Seeder
                 'price' => 8.95,
                 'stock' => 2,
                 'category' => 'Frenos',
+                'image_url' => 'Liquido_freno.png',
             ],
 
-            // --- Suspensión (Nuevos) ---
+            // --- Suspensión ---
             [
                 'name' => 'Amortiguador de Gas Trasero',
                 'description' => 'Amortiguador bitubo de presión de gas. Restaura el control y la estabilidad original del vehículo.',
                 'price' => 65.00,
                 'stock' => 1,
                 'category' => 'Suspensión',
+                'image_url' => 'Amortiguador_gas.png',
             ],
 
-            // --- Motor (Nuevos) ---
+            // --- Motor ---
             [
                 'name' => 'Bujías de Iridio (Pack 4)',
                 'description' => 'Bujías de alto rendimiento con electrodo central de iridio. Mayor durabilidad y mejor arranque.',
                 'price' => 42.00,
                 'stock' => 25,
                 'category' => 'Motor',
+                'image_url' => 'Bujias_iridio.png',
             ],
              [
                 'name' => 'Kit Correa Distribución',
@@ -94,31 +105,40 @@ class ProductsSeeder extends Seeder
                 'price' => 110.00,
                 'stock' => 5,
                 'category' => 'Motor',
+                'image_url' => 'Correa_distribucion.png',
             ],
         ];
 
         foreach ($products as $data) {
-            // Extraer el nombre de la categoría del array de datos
+            // Extraer variables que no pertenecen directamente a la tabla products
             $categoryName = $data['category'];
-            unset($data['category']); // Lo quitamos para que no falle al crear el producto
+            $imageUrl = $data['image_url'] ?? null; // Si no tiene, se queda en null
 
-            // Crear el producto
+            unset($data['category']);
+            unset($data['image_url']);
+
+            // 1. Crear el producto
             $product = Product::create($data);
 
-            // Buscar la categoría (aseguramos que exista, aunque el CategoriesSeeder ya debió correr)
+            // 2. Asociar Categoría
             $category = Category::firstOrCreate(['name' => $categoryName]);
-
-            // Asociar
             $product->categories()->attach($category->id);
+
+            // 3. --- NUEVO: Crear y asociar la Imagen ---
+            if ($imageUrl) {
+                $image = Image::create([
+                    'url' => $imageUrl,
+                    'is_primary' => true
+                ]);
+                $product->images()->attach($image->id);
+            }
         }
 
-        // Crear productos aleatorios extra y asignarles categorías al azar
-        // Solo usar las 5 categorías reales (no las generadas por factory)
+        // Crear productos aleatorios extra (Estos no tendrán foto y probarán que tu "placeholder" del frontend funciona)
         $realCategories = Category::whereIn('name', ['Limpieza', 'Aceites', 'Frenos', 'Suspensión', 'Motor'])->get();
         $randomProducts = Product::factory()->count(10)->create();
 
         foreach ($randomProducts as $product) {
-            // Asignar entre 1 y 2 categorías reales aleatorias a cada producto
             $randomCats = $realCategories->random(rand(1, 2));
             $product->categories()->attach($randomCats->pluck('id'));
         }

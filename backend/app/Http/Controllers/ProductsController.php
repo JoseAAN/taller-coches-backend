@@ -24,7 +24,6 @@ class ProductsController extends Controller
      */
     public function index(Request $request)
     {
-        
         $bindings = [];
 
         // Seleccionar todos los productos
@@ -42,7 +41,6 @@ class ProductsController extends Controller
         }
 
         // Filtro por búsqueda de texto (nombre o descripción)
-        // Usa LIKE con parámetro preparado para evitar inyección SQL
         if ($request->has('search')) {
             $whereClauses[] = "(p.name LIKE ? OR p.description LIKE ?)";
             $searchTerm = '%' . $request->search . '%';
@@ -79,17 +77,35 @@ class ProductsController extends Controller
         // Ejecutar consulta principal con prepared statement
         $products = DB::select($sql, $paginatedBindings);
 
-        // Para cada producto, obtener sus categorías con una consulta JOIN
+        // Para cada producto, obtener sus categorías y sus imágenes
         foreach ($products as &$product) {
+            // 1. Obtener categorías
             $categories = DB::select(
-                "SELECT c.name 
-                 FROM categories c 
-                 INNER JOIN products_categories pc ON c.id = pc.category_id 
+                "SELECT c.name
+                 FROM categories c
+                 INNER JOIN products_categories pc ON c.id = pc.category_id
                  WHERE pc.product_id = ?",
                 [$product->id]
             );
-            // Extraer solo los nombres de las categorías
             $product->categories = array_map(fn($cat) => $cat->name, $categories);
+
+            // 2. --- NUEVO: Obtener imágenes ---
+            $images = DB::select(
+                "SELECT i.id, i.url, i.is_primary
+                 FROM images i
+                 INNER JOIN product_images pi ON i.id = pi.image_id
+                 WHERE pi.product_id = ?",
+                [$product->id]
+            );
+
+            $product->images = array_map(function ($img) {
+                return [
+                    'id' => $img->id,
+                    'url' => $img->url,
+                    'is_primary' => (bool) $img->is_primary
+                ];
+            }, $images);
+            // ----------------------------------
         }
 
         // Construir respuesta con metadatos de paginación
@@ -100,7 +116,7 @@ class ProductsController extends Controller
                 'per_page' => $perPage,
                 'total' => $total,
                 'last_page' => (int) ceil($total / $perPage),
-                'path' => $request->url(), // URL base para la paginación del frontend
+                'path' => $request->url(),
             ]
         ]);
     }
@@ -131,6 +147,25 @@ class ProductsController extends Controller
         );
         $product->categories = array_map(fn($cat) => $cat->name, $categories);
 
+        // --- NUEVO: Obtener imágenes del producto mediante JOIN ---
+        $images = DB::select(
+            "SELECT i.id, i.url, i.is_primary
+             FROM images i
+             INNER JOIN product_images pi ON i.id = pi.image_id
+             WHERE pi.product_id = ?",
+            [$product->id]
+        );
+
+        // Formateamos las imágenes (y convertimos el 1/0 de MySQL a un true/false real)
+        $product->images = array_map(function ($img) {
+            return [
+                'id' => $img->id,
+                'url' => $img->url,
+                'is_primary' => (bool) $img->is_primary
+            ];
+        }, $images);
+        // ----------------------------------------------------------
+
         return response()->json(['data' => $product]);
     }
 
@@ -140,24 +175,25 @@ class ProductsController extends Controller
      */
     public function store(Request $request)
     {
-        // Validación de datos de entrada (Laravel)
+        // 1. Validación de datos de entrada (Añadimos image_url)
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'categories' => 'array|exists:categories,id',
+            'image_url' => 'nullable|string|max:255', // <-- NUEVO: Validamos la imagen
         ]);
 
-        // Usar transacción para asegurar consistencia (producto + categorías)
+        // Usar transacción para asegurar consistencia (producto + categorías + imágenes)
         DB::beginTransaction();
 
         try {
             $now = Carbon::now();
 
-            // INSERT del producto con prepared statement
+            // 2. INSERT del producto
             DB::insert(
-                "INSERT INTO products (name, description, price, stock, created_at, updated_at) 
+                "INSERT INTO products (name, description, price, stock, created_at, updated_at)
                  VALUES (?, ?, ?, ?, ?, ?)",
                 [
                     $validatedData['name'],
@@ -172,22 +208,41 @@ class ProductsController extends Controller
             // Obtener el ID del producto recién insertado
             $productId = DB::getPdo()->lastInsertId();
 
-            // Insertar relaciones con categorías en tabla pivote
+            // 3. Insertar relaciones con categorías en tabla pivote
             if (isset($validatedData['categories'])) {
                 foreach ($validatedData['categories'] as $categoryId) {
                     DB::insert(
-                        "INSERT INTO products_categories (product_id, category_id, created_at, updated_at) 
+                        "INSERT INTO products_categories (product_id, category_id, created_at, updated_at)
                          VALUES (?, ?, ?, ?)",
                         [$productId, $categoryId, $now, $now]
                     );
                 }
             }
 
+            // 4. NUEVO: Insertar la imagen y su relación
+            if (!empty($validatedData['image_url'])) {
+                // A. Insertamos la imagen en su tabla marcándola como principal (1)
+                DB::insert(
+                    "INSERT INTO images (url, is_primary, created_at, updated_at)
+                     VALUES (?, ?, ?, ?)",
+                    [$validatedData['image_url'], 1, $now, $now] // 1 = true (booleano en MySQL)
+                );
+
+                // Recuperamos el ID de la imagen que se acaba de crear
+                $imageId = DB::getPdo()->lastInsertId();
+
+                // B. Vinculamos el producto y la imagen en la tabla pivote
+                DB::insert(
+                    "INSERT INTO product_images (product_id, image_id, created_at, updated_at)
+                     VALUES (?, ?, ?, ?)",
+                    [$productId, $imageId, $now, $now]
+                );
+            }
+
             DB::commit();
 
             // Devolver el producto creado
             return $this->show($productId);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error al crear el producto', 'error' => $e->getMessage()], 500);
@@ -206,13 +261,14 @@ class ProductsController extends Controller
             return response()->json(['message' => 'Producto no encontrado'], 404);
         }
 
-        // Validación de datos
+        // Validación de datos (Añadimos image_url)
         $validatedData = $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
             'stock' => 'sometimes|integer|min:0',
             'categories' => 'array|exists:categories,id',
+            'image_url' => 'nullable|string|max:255', // <-- NUEVO: Validación de la imagen
         ]);
 
         DB::beginTransaction();
@@ -258,18 +314,59 @@ class ProductsController extends Controller
                 // INSERT las nuevas asociaciones
                 foreach ($validatedData['categories'] as $categoryId) {
                     DB::insert(
-                        "INSERT INTO products_categories (product_id, category_id, created_at, updated_at) 
+                        "INSERT INTO products_categories (product_id, category_id, created_at, updated_at)
                          VALUES (?, ?, ?, ?)",
                         [$id, $categoryId, $now, $now]
                     );
                 }
             }
 
+            // --- NUEVO: LÓGICA DE ACTUALIZACIÓN DE IMÁGENES ---
+            if (array_key_exists('image_url', $validatedData)) {
+                $imageUrl = $validatedData['image_url'];
+
+                // 1. Buscamos si este producto ya tiene una imagen principal asignada
+                $existingImage = DB::select("
+                    SELECT i.id
+                    FROM images i
+                    JOIN product_images pi ON i.id = pi.image_id
+                    WHERE pi.product_id = ? AND i.is_primary = 1
+                    LIMIT 1
+                ", [$id]);
+
+                if (!empty($imageUrl)) {
+                    if (!empty($existingImage)) {
+                        // A. Si ya tenía foto, simplemente actualizamos la URL
+                        DB::update(
+                            "UPDATE images SET url = ?, updated_at = ? WHERE id = ?",
+                            [$imageUrl, $now, $existingImage[0]->id]
+                        );
+                    } else {
+                        // B. Si NO tenía foto, la creamos y la vinculamos
+                        DB::insert(
+                            "INSERT INTO images (url, is_primary, created_at, updated_at) VALUES (?, ?, ?, ?)",
+                            [$imageUrl, 1, $now, $now]
+                        );
+                        $imageId = DB::getPdo()->lastInsertId();
+                        DB::insert(
+                            "INSERT INTO product_images (product_id, image_id, created_at, updated_at) VALUES (?, ?, ?, ?)",
+                            [$id, $imageId, $now, $now]
+                        );
+                    }
+                } else {
+                    // C. Si nos envían la imagen vacía (null), borramos el vínculo para quitarle la foto al producto
+                    if (!empty($existingImage)) {
+                        DB::delete("DELETE FROM product_images WHERE product_id = ? AND image_id = ?", [$id, $existingImage[0]->id]);
+                        // Opcional: DB::delete("DELETE FROM images WHERE id = ?", [$existingImage[0]->id]);
+                    }
+                }
+            }
+            // -------------------------------------------------
+
             DB::commit();
 
             // Devolver el producto actualizado
             return $this->show($id);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error al actualizar el producto', 'error' => $e->getMessage()], 500);
