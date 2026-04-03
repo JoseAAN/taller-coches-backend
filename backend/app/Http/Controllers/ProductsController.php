@@ -22,7 +22,7 @@ class ProductsController extends Controller
      * Listar productos con filtros opcionales.
      * Usa: SELECT con JOIN, WHERE, LIKE y paginación manual.
      */
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $bindings = [];
 
@@ -80,11 +80,11 @@ class ProductsController extends Controller
         if (!empty($products)) {
             // 1. Extraemos todos los IDs de esta página
             $productIds = array_map(fn($p) => $p->id, $products);
-
-            // 2. Preparamos placeholders dinámicos para el IN (?, ?, ?) para evitar Inyección SQL
             $placeholders = implode(',', array_fill(0, count($productIds), '?'));
 
-            // 3. Hacemos UNA ÚNICA consulta para traternos todas las categorías
+            // ---------------------------------------------------------
+            // 2A. LÓGICA DE CATEGORÍAS (Tu código súper optimizado)
+            // ---------------------------------------------------------
             $categoriesRelations = DB::select(
                 "SELECT pc.product_id, c.name
                  FROM categories c
@@ -93,15 +93,39 @@ class ProductsController extends Controller
                 $productIds
             );
 
-            // 4. Organizamos el resultado en memoria PHP rápido O(N)
             $categoriesByProduct = [];
             foreach ($categoriesRelations as $row) {
                 $categoriesByProduct[$row->product_id][] = $row->name;
             }
 
-            // 5. Se lo asignamos a cada producto directamente
+            // ---------------------------------------------------------
+            // 2B. NUEVO: LÓGICA DE IMÁGENES (Misma optimización)
+            // ---------------------------------------------------------
+            $imagesRelations = DB::select(
+                "SELECT pi.product_id, i.id, i.url, i.is_primary
+                 FROM images i
+                 INNER JOIN product_images pi ON i.id = pi.image_id
+                 WHERE pi.product_id IN ($placeholders)",
+                $productIds
+            );
+
+            $imagesByProduct = [];
+            foreach ($imagesRelations as $row) {
+                $imagesByProduct[$row->product_id][] = [
+                    'id' => $row->id,
+                    'url' => $row->url,
+                    // Convertimos el 1/0 a booleano aquí mismo
+                    'is_primary' => (bool) $row->is_primary
+                ];
+            }
+
+            // ---------------------------------------------------------
+            // 3. ASIGNACIÓN FINAL EN O(N)
+            // ---------------------------------------------------------
             foreach ($products as &$product) {
                 $product->categories = $categoriesByProduct[$product->id] ?? [];
+                // Asignamos las imágenes (si no tiene, se queda un array vacío)
+                $product->images = $imagesByProduct[$product->id] ?? [];
             }
         }
 
