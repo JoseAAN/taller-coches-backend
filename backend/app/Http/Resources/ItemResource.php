@@ -40,6 +40,7 @@ class ItemResource extends JsonResource
                 'description' => $this->item_type_id == ItemType::PRODUCT ? $target->description : ($target->service->description ?? ''),
                 // Si es un producto, añadimos stock e imágenes
                 'stock' => $this->item_type_id == ItemType::PRODUCT ? $target->stock : null,
+                'images' => $this->item_type_id == ItemType::PRODUCT ? $target->images : [],
             ],
         ];
     }

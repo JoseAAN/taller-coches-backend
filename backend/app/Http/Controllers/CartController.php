@@ -16,7 +16,7 @@ class CartController extends Controller
      */
     public function index()
     {
-        $carts = Cart::with('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type')->get();
+        $carts = Cart::with('items.itemProduct.product.images', 'items.itemAppointment.appointment', 'items.type')->get();
         return new CartCollection($carts);
     }
 
@@ -43,7 +43,7 @@ class CartController extends Controller
             return response()->json(['message' => 'No tienes permisos para acceder a este carrito.'], Response::HTTP_FORBIDDEN);
         }
 
-        return new CartResource($cart->load('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type'));
+        return new CartResource($cart->load('items.itemProduct.product.images', 'items.itemAppointment.appointment', 'items.type'));
     }
 
     /**
@@ -69,7 +69,7 @@ class CartController extends Controller
 
     /**
      * Remove the specified resource from storage.
-    */
+     */
     public function destroy(Request $request, int $id)
     {
         $cart = Cart::find($id);
@@ -92,7 +92,7 @@ class CartController extends Controller
         $cart = Cart::where('user_id', $userId)
             ->doesntHave('invoice')
             ->first();
-        
+
         if (!$cart) {
             $cart = Cart::create([
                 'user_id' => $userId,
@@ -100,8 +100,7 @@ class CartController extends Controller
             ]);
         }
 
-        $cart->load('items.itemProduct.product', 'items.itemAppointment.appointment', 'items.type');
-
+        $cart->load('items.itemProduct.product.images', 'items.itemAppointment.appointment', 'items.type');
         if (!$cart) {
             return response()->json(['message' => 'Carrito no encontrado para el usuario'], 404);
         }
