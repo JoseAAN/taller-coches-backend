@@ -153,6 +153,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update']);
 
     // Users: Gestión
+    Route::post('/admin-users', [UserController::class, 'adminStore']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
