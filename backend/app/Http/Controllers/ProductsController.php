@@ -99,9 +99,27 @@ class ProductsController extends Controller
                 $categoriesByProduct[$row->product_id][] = $row->name;
             }
 
-            // 5. Se lo asignamos a cada producto directamente
+            // 5. Traer las imágenes (Carga por lotes para evitar N+1)
+            $imagesRelations = DB::select(
+                "SELECT pi.product_id, i.url, i.is_primary 
+                 FROM images i 
+                 INNER JOIN product_images pi ON i.id = pi.image_id 
+                 WHERE pi.product_id IN ($placeholders)",
+                $productIds
+            );
+
+            $imagesByProduct = [];
+            foreach ($imagesRelations as $row) {
+                $imagesByProduct[$row->product_id][] = [
+                    'url' => $row->url,
+                    'is_primary' => (bool)$row->is_primary
+                ];
+            }
+
+            // 6. Se lo asignamos a cada producto directamente
             foreach ($products as &$product) {
                 $product->categories = $categoriesByProduct[$product->id] ?? [];
+                $product->images = $imagesByProduct[$product->id] ?? [];
             }
         }
 
