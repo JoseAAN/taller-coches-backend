@@ -79,17 +79,32 @@ class ProductsController extends Controller
         // Ejecutar consulta principal con prepared statement
         $products = DB::select($sql, $paginatedBindings);
 
-        // Para cada producto, obtener sus categorías con una consulta JOIN
-        foreach ($products as &$product) {
-            $categories = DB::select(
-                "SELECT c.name 
+        if (!empty($products)) {
+            // 1. Extraemos todos los IDs de esta página
+            $productIds = array_map(fn($p) => $p->id, $products);
+            
+            // 2. Preparamos placeholders dinámicos para el IN (?, ?, ?) para evitar Inyección SQL
+            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+
+            // 3. Hacemos UNA ÚNICA consulta para traternos todas las categorías
+            $categoriesRelations = DB::select(
+                "SELECT pc.product_id, c.name 
                  FROM categories c 
                  INNER JOIN products_categories pc ON c.id = pc.category_id 
-                 WHERE pc.product_id = ?",
-                [$product->id]
+                 WHERE pc.product_id IN ($placeholders)",
+                $productIds
             );
-            // Extraer solo los nombres de las categorías
-            $product->categories = array_map(fn($cat) => $cat->name, $categories);
+
+            // 4. Organizamos el resultado en memoria PHP rápido O(N)
+            $categoriesByProduct = [];
+            foreach ($categoriesRelations as $row) {
+                $categoriesByProduct[$row->product_id][] = $row->name;
+            }
+
+            // 5. Se lo asignamos a cada producto directamente
+            foreach ($products as &$product) {
+                $product->categories = $categoriesByProduct[$product->id] ?? [];
+            }
         }
 
         // Construir respuesta con metadatos de paginación

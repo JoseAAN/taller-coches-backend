@@ -127,13 +127,6 @@ class VehicleController extends Controller
                 ], 404);
             }
 
-            $user = $request->user();
-            if ($user->role->name !== 'admin' && $vehicle->user_id !== $user->id) {
-                return response()->json([
-                    'message' => 'No tienes permiso para actualizar este vehículo',
-                ], 403);
-            }
-
             $data = $request->validate([
                 'license_plate'   => 'sometimes|required|string|max:20',
                 'brand'           => 'sometimes|required|string|max:100',
@@ -143,11 +136,8 @@ class VehicleController extends Controller
                 'user_id'         => 'sometimes|nullable|exists:users,id'
             ]);
 
-            if ($user->role->name === 'admin' && $request->has('user_id') && $request->filled('user_id')) {
+            if ($request->has('user_id') && $request->filled('user_id')) {
                 $data['user_id'] = $request->input('user_id');
-            } else {
-                // If not admin, strictly ignore the user_id that might be in $data implicitly
-                unset($data['user_id']); 
             }
 
             $vehicle->update($data);

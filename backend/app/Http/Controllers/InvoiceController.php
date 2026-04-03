@@ -116,9 +116,6 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
      */
     public function update(Request $request, string $id)
     {
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
 
         $data = $request->validate([
             'invoice_number' => 'sometimes|string|unique:invoices,invoice_number,' . $id,
@@ -139,9 +136,6 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
      */
     public function destroy(string $id, Request $request)
     {
-        if ($request->user()->role->name !== 'admin') {
-            return response()->json(['message' => 'No tienes permiso de administrador'], 403);
-        }
 
         $invoice = Invoice::find($id);
         if (!$invoice) {
