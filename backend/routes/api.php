@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function () {
     // Productos: Lectura publica
     Route::get('/products', [ProductsController::class, 'index']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
+    Route::post('/products/{id}/restock-subscribe', [ProductsController::class, 'subscribeToRestock']);
 
     // Categorias: Lectura publica
     Route::get('/categories', [CategoryController::class, 'index']);

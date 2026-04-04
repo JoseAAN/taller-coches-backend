@@ -384,6 +384,16 @@ class ProductsController extends Controller
             }
             // -------------------------------------------------
 
+            // --- AVISOS DE RESTOCK POR MAIL ---
+            // Si el stock pasa de 0 a mas de 0, se envian los correos
+            if (isset($validatedData['stock']) && $existing[0]->stock == 0 && $validatedData['stock'] > 0) {
+                $subscriptions = DB::select("SELECT id, email FROM restock_subscriptions WHERE product_id = ? AND is_notified = 0", [$id]);
+                foreach ($subscriptions as $sub) {
+                    \Illuminate\Support\Facades\Mail::to($sub->email)->send(new \App\Mail\RestockNotificationMail($existing[0]->name, $id));
+                    DB::update("UPDATE restock_subscriptions SET is_notified = 1, updated_at = ? WHERE id = ?", [$now, $sub->id]);
+                }
+            }
+
             DB::commit();
 
             // Devolver el producto actualizado
@@ -413,5 +423,34 @@ class ProductsController extends Controller
         DB::delete("DELETE FROM products WHERE id = ?", [$id]);
 
         return response()->json(['message' => 'Producto borrado correctamente']);
+    }
+
+    /**
+     * Suscribirse a avisos de restock de un producto.
+     */
+    public function subscribeToRestock(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        //verifico que el producto existe
+        $existing = DB::select("SELECT id FROM products WHERE id = ?", [$id]);
+        if (empty($existing)) {
+            return response()->json(['message' => 'Producto no encontrado'], 404);
+        }
+
+        //verifico que no se haya suscrito ya para que no rompa
+        $already = DB::select("SELECT id FROM restock_subscriptions WHERE product_id = ? AND email = ? AND is_notified = 0", [$id, $validated['email']]);
+        
+        if (empty($already)) {
+            $now = Carbon::now();
+            DB::insert(
+                "INSERT INTO restock_subscriptions (product_id, email, is_notified, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+                [$id, $validated['email'], 0, $now, $now]
+            );
+        }
+
+        return response()->json(['message' => 'Suscripción completada. Te avisaremos cuando haya stock.']);
     }
 }
