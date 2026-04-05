@@ -33,6 +33,7 @@ class AppointmentController extends Controller
 
         // Calculamos las horas que tenemos ocupadas en ese dia
         $appointments = Appointment::whereDate('appointment_date', $request->date)
+            ->where('status', '!=', 'cancelled')
             ->get()
             ->map(function ($appointment) {
                 return [
@@ -107,6 +108,15 @@ class AppointmentController extends Controller
             );
 
             $end = $start->copy()->addMinutes($durationMinutes);
+            $workStart = Carbon::parse($request->date.' 08:00:00');
+            $workEnd = Carbon::parse($request->date.' 21:00:00');
+
+            if ($start->lt($workStart) || $end->gt($workEnd)) {
+                return response()->json([
+                    'message' => 'El horario debe estar entre las 08:00 y las 21:00',
+                ], 422);
+            }
+
             // Comprobamos solapamiento
             $exists = Appointment::where(function ($q) use ($start, $end) {
                 $q->where('appointment_date', '<', $end)

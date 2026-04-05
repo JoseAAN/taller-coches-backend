@@ -48,12 +48,21 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
         $data = $request->validate([
             'total' => 'required|numeric',
             'cart_id' => 'nullable|exists:carts,id',
-            'appointment_id' => 'nullable|exists:appointments,id',
         ]);
 
         $data['user_id'] = $request->user()->id;
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $request) {
+            $cart = null;
+
+            if (isset($data['cart_id'])) {
+                $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
+
+                if (!$cart || (int) $cart->user_id !== (int) $request->user()->id) {
+                    return response()->json(['message' => 'No tienes permisos para facturar este carrito'], 403);
+                }
+            }
+
             $invoice = Invoice::create($data);
             
             $formatCheck = $this->validateInvoiceFormat($invoice->invoice_number);
@@ -62,8 +71,7 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             }
 
            
-            if (isset($data['cart_id'])) {
-                $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
+            if ($cart) {
                 if ($cart) {
                     foreach ($cart->items as $item) {
                         if ($item->item_type_id == \App\Models\ItemType::PRODUCT && $item->itemProduct) {
@@ -102,12 +110,22 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $invoice = Invoice::with(['cart.items.itemProduct.product', 'cart.items.type', 'cart.items.itemAppointment.appointment', 'user'])->find($id);
         if (!$invoice) {
             return response()->json(['message' => 'Factura no encontrada'], 404);
         }
+
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
+        if ($user->role?->name !== 'admin' && (int) $invoice->user_id !== (int) $user->id) {
+            return response()->json(['message' => 'No tienes permisos para ver esta factura'], 403);
+        }
+
         return new InvoiceResource($invoice);
     }
 
