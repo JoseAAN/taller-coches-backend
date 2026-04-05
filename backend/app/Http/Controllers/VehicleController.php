@@ -8,10 +8,17 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
+    private function serverErrorResponse(string $message = 'Ha ocurrido un error')
+    {
+        return response()->json([
+            'message' => $message,
+        ], 500);
+    }
+
     /**
-     * Listar vehículos.
-     * - Admin: ve todos los vehículos.
-     * - Usuario autenticado: ve solo sus propios vehículos.
+     * Listar vehiculos.
+     * - Admin: ve todos los vehiculos.
+     * - Usuario autenticado: ve solo sus propios vehiculos.
      */
     public function index(Request $request)
     {
@@ -30,10 +37,7 @@ class VehicleController extends Controller
                 'data' => $vehicles,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverErrorResponse();
         }
     }
 
@@ -41,50 +45,42 @@ class VehicleController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    try {
-        $data = $request->validate([
-            'license_plate'   => 'required|string|max:20',
-            'brand'           => 'required|string|max:100',
-            'model'           => 'required|string|max:100',
-            'color'           => 'required|string|max:50',
-            'vehicle_type_id' => 'required|exists:vehicle_types,id',
-            'user_id'         => 'sometimes|nullable|exists:users,id'
-        ]);
+    {
+        try {
+            $data = $request->validate([
+                'license_plate' => 'required|string|max:20',
+                'brand' => 'required|string|max:100',
+                'model' => 'required|string|max:100',
+                'color' => 'required|string|max:50',
+                'vehicle_type_id' => 'required|exists:vehicle_types,id',
+                'user_id' => 'sometimes|nullable|exists:users,id',
+            ]);
 
-        $user = $request->user();
+            $user = $request->user();
 
-        // Si es admin y envía user_id, usa ese. Si no, usa el del admin o cliente actual.
-        if ($user->role->name === 'admin' && $request->has('user_id') && $request->filled('user_id')) {
-            $data['user_id'] = $request->input('user_id');
-        } else {
-            $data['user_id'] = $user->id;
+            if ($user->role->name === 'admin' && $request->filled('user_id')) {
+                $data['user_id'] = $request->input('user_id');
+            } else {
+                $data['user_id'] = $user->id;
+            }
+
+            $vehicle = Vehicle::create($data);
+            $vehicle->load(['vehicleType', 'user']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Vehiculo anadido correctamente',
+                'vehicle' => new VehiclesResource($vehicle),
+            ], 201);
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse('Error al crear el vehiculo');
         }
-
-        $vehicle = Vehicle::create($data);
-
-        // Carga la relación para que el resource pueda acceder a vehicleType y user
-        $vehicle->load(['vehicleType', 'user']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Vehículo añadido correctamente',
-            'vehicle' => new VehiclesResource($vehicle) 
-        ], 201);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error al crear el vehículo',
-            'error'   => $e->getMessage()
-        ], 500);
     }
-}
 
     /**
-     * Mostrar un vehículo específico por ID.
-     * - Admin: puede ver cualquier vehículo.
-     * - Usuario autenticado: solo puede ver sus propios vehículos.
+     * Mostrar un vehiculo especifico por ID.
+     * - Admin: puede ver cualquier vehiculo.
+     * - Usuario autenticado: solo puede ver sus propios vehiculos.
      */
     public function show(Request $request, string $id)
     {
@@ -93,23 +89,22 @@ class VehicleController extends Controller
 
             if (!$vehicle) {
                 return response()->json([
-                    'message' => 'Vehículo no encontrado',
+                    'message' => 'Vehiculo no encontrado',
                 ], 404);
             }
 
             $user = $request->user();
             if ($user->role->name !== 'admin' && $vehicle->user_id !== $user->id) {
                 return response()->json([
-                    'message' => 'No tienes permiso para ver este vehículo',
+                    'message' => 'No tienes permiso para ver este vehiculo',
                 ], 403);
             }
 
-            return response()->json(['data' => $vehicle]);
-        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error' => $e->getMessage(),
-            ], 500);
+                'data' => $vehicle,
+            ]);
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse();
         }
     }
 
@@ -121,34 +116,34 @@ class VehicleController extends Controller
         try {
             $vehicle = Vehicle::find($id);
 
-            if (! $vehicle) {
+            if (!$vehicle) {
                 return response()->json([
-                    'message' => 'Vehículo no encontrado',
+                    'message' => 'Vehiculo no encontrado',
                 ], 404);
             }
 
             $data = $request->validate([
-                'license_plate'   => 'sometimes|required|string|max:20',
-                'brand'           => 'sometimes|required|string|max:100',
-                'model'           => 'sometimes|required|string|max:100',
-                'color'           => 'sometimes|required|string|max:50',
+                'license_plate' => 'sometimes|required|string|max:20',
+                'brand' => 'sometimes|required|string|max:100',
+                'model' => 'sometimes|required|string|max:100',
+                'color' => 'sometimes|required|string|max:50',
                 'vehicle_type_id' => 'sometimes|required|exists:vehicle_types,id',
-                'user_id'         => 'sometimes|nullable|exists:users,id'
+                'user_id' => 'sometimes|nullable|exists:users,id',
             ]);
 
-            if ($request->has('user_id') && $request->filled('user_id')) {
+            if ($request->filled('user_id')) {
                 $data['user_id'] = $request->input('user_id');
             }
 
             $vehicle->update($data);
             $vehicle->load(['vehicleType', 'user']);
 
-            return response()->json($vehicle);
-        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => 'Vehiculo actualizado correctamente',
+                'data' => $vehicle,
+            ]);
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse();
         }
     }
 
@@ -162,27 +157,24 @@ class VehicleController extends Controller
 
             if (!$vehicle) {
                 return response()->json([
-                    'message' => 'Vehículo no encontrado',
+                    'message' => 'Vehiculo no encontrado',
                 ], 404);
             }
 
             $user = $request->user();
             if ($user->role->name !== 'admin' && $vehicle->user_id !== $user->id) {
                 return response()->json([
-                    'message' => 'No tienes permiso para eliminar este vehículo',
+                    'message' => 'No tienes permiso para eliminar este vehiculo',
                 ], 403);
             }
 
             $vehicle->delete();
 
             return response()->json([
-                'message' => 'Vehículo eliminado correctamente',
+                'message' => 'Vehiculo eliminado correctamente',
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->serverErrorResponse();
         }
     }
 }

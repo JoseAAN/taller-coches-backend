@@ -7,21 +7,26 @@ use Illuminate\Http\Request;
 
 class ServiceTypeController extends Controller
 {
+    private function serverErrorResponse(string $message = 'Ha ocurrido un error')
+    {
+        return response()->json([
+            'message' => $message,
+        ], 500);
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        try{
-            $vehicleTypes = ServiceType::all();
+        try {
+            $serviceTypes = ServiceType::all();
+
             return response()->json([
-                'serviceType' => $vehicleTypes
+                'serviceType' => $serviceTypes,
             ]);
-        }catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error'   => $e->getMessage()
-            ], 500);
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse();
         }
     }
 
@@ -30,9 +35,9 @@ class ServiceTypeController extends Controller
      */
     public function store(Request $request)
     {
-          try {
+        try {
             $data = $request->validate([
-                'name' => 'required'
+                'name' => 'required',
             ]);
 
             if (ServiceType::where('name', $request->name)->exists()) {
@@ -40,33 +45,27 @@ class ServiceTypeController extends Controller
             }
 
             $serviceType = ServiceType::create($data);
-            return response()->json($serviceType, 201);
 
+            return response()->json($serviceType, 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->serverErrorResponse();
         }
     }
 
-    public function show(string $id){
+    public function show(string $id)
+    {
         try {
             $serviceType = ServiceType::find($id);
 
             if (!$serviceType) {
                 return response()->json([
-                    'message' => 'Tipo de servicio no encontrado'
+                    'message' => 'Tipo de servicio no encontrado',
                 ], 404);
             }
 
             return response()->json($serviceType, 200);
-
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->serverErrorResponse();
         }
     }
 
@@ -77,23 +76,19 @@ class ServiceTypeController extends Controller
 
             if (!$serviceType) {
                 return response()->json([
-                    'message' => 'Tipo de servicio no encontrado'
+                    'message' => 'Tipo de servicio no encontrado',
                 ], 404);
             }
 
             $data = $request->validate([
-                'name' => 'required|string|max:255'
+                'name' => 'required|string|max:255',
             ]);
 
             $serviceType->update($data);
 
             return response()->json($serviceType, 200);
-
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->serverErrorResponse();
         }
     }
 
@@ -107,21 +102,17 @@ class ServiceTypeController extends Controller
 
             if (!$serviceType) {
                 return response()->json([
-                    'message' => 'Tipo de servicio no encontrado'
+                    'message' => 'Tipo de servicio no encontrado',
                 ], 404);
             }
 
             $serviceType->delete();
 
             return response()->json([
-                'message' => 'Tipo de servicio eliminado correctamente'
+                'message' => 'Tipo de servicio eliminado correctamente',
             ], 200);
-
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Ha ocurrido un error',
-                'error'   => $e->getMessage()
-            ], 500);
+            return $this->serverErrorResponse();
         }
     }
 }
