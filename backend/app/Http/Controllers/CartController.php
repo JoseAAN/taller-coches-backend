@@ -16,7 +16,11 @@ class CartController extends Controller
      */
     public function index()
     {
-        $carts = Cart::with('items.itemProduct.product.images', 'items.itemAppointment.appointment', 'items.type')->get();
+        $carts = Cart::with(
+            'items.itemProduct.product.images',
+            'items.itemAppointment.appointment.service.images',
+            'items.type'
+        )->get();
         return new CartCollection($carts);
     }
 
@@ -43,7 +47,11 @@ class CartController extends Controller
             return response()->json(['message' => 'No tienes permisos para acceder a este carrito.'], Response::HTTP_FORBIDDEN);
         }
 
-        return new CartResource($cart->load('items.itemProduct.product.images', 'items.itemAppointment.appointment', 'items.type'));
+        return new CartResource($cart->load(
+            'items.itemProduct.product.images',
+            'items.itemAppointment.appointment.service.images',
+            'items.type'
+        ));
     }
 
     /**
@@ -100,7 +108,11 @@ class CartController extends Controller
             ]);
         }
 
-        $cart->load('items.itemProduct.product.images', 'items.itemAppointment.appointment', 'items.type');
+        $cart->load(
+            'items.itemProduct.product.images',
+            'items.itemAppointment.appointment.service.images',
+            'items.type'
+        );
         if (!$cart) {
             return response()->json(['message' => 'Carrito no encontrado para el usuario'], 404);
         }

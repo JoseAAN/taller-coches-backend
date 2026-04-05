@@ -27,4 +27,10 @@ class Image extends Model
         return $this->belongsToMany(Product::class, 'product_images')
                     ->withTimestamps();
     }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'service_images')
+                    ->withTimestamps();
+    }
 }

@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Image;
 use App\Models\Service;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ServiceResource;
 use App\Http\Resources\ServiceCollection;
 
@@ -14,7 +17,7 @@ class ServiceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Service::with('serviceType');
+        $query = Service::with('serviceType', 'images');
 
         // Filtrar por Tipo de Servicio
         if ($request->has('service_type_id')) {
@@ -46,11 +49,17 @@ class ServiceController extends Controller
             'average_duration' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
             'service_type_id' => 'required|exists:service_types,id',
+            'image_url' => 'nullable|string|max:255',
         ]);
 
-        $service = Service::create($validatedData);
+        $service = DB::transaction(function () use ($validatedData) {
+            $service = Service::create(collect($validatedData)->except('image_url')->all());
+            $this->syncPrimaryImage($service, $validatedData['image_url'] ?? null);
 
-        return new ServiceResource($service->load('serviceType'));
+            return $service;
+        });
+
+        return new ServiceResource($service->load('serviceType', 'images'));
     }
 
     /**
@@ -58,7 +67,7 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        return new ServiceResource($service->load('serviceType'));
+        return new ServiceResource($service->load('serviceType', 'images'));
     }
 
     /**
@@ -72,11 +81,18 @@ class ServiceController extends Controller
             'average_duration' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
             'service_type_id' => 'sometimes|exists:service_types,id',
+            'image_url' => 'nullable|string|max:255',
         ]);
 
-        $service->update($validatedData);
+        DB::transaction(function () use ($service, $validatedData) {
+            $service->update(collect($validatedData)->except('image_url')->all());
 
-        return new ServiceResource($service->load('serviceType'));
+            if (array_key_exists('image_url', $validatedData)) {
+                $this->syncPrimaryImage($service, $validatedData['image_url']);
+            }
+        });
+
+        return new ServiceResource($service->load('serviceType', 'images'));
     }
 
     /**
@@ -111,12 +127,48 @@ class ServiceController extends Controller
         $service->show_on_home = $request->show_on_home;
         $service->save();
 
-        return new ServiceResource($service->load('serviceType'));
+        return new ServiceResource($service->load('serviceType', 'images'));
     }
 
     public function getHomeServices()
     {
-        $services = Service::where('show_on_home', true)->with('serviceType')->get();
+        $services = Service::where('show_on_home', true)->with('serviceType', 'images')->get();
         return new ServiceCollection($services);
+    }
+
+    private function syncPrimaryImage(Service $service, ?string $imageUrl): void
+    {
+        $now = Carbon::now();
+        $currentPrimary = $service->images()->where('is_primary', true)->first();
+
+        if (!$imageUrl) {
+            $service->image = null;
+            $service->save();
+
+            if ($currentPrimary) {
+                $service->images()->detach($currentPrimary->id);
+            }
+
+            return;
+        }
+
+        $image = Image::firstOrCreate(
+            ['url' => $imageUrl],
+            ['is_primary' => true]
+        );
+
+        if (!$service->images()->where('images.id', $image->id)->exists()) {
+            $service->images()->attach($image->id, [
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        if ($currentPrimary && $currentPrimary->id !== $image->id) {
+            $service->images()->detach($currentPrimary->id);
+        }
+
+        $service->image = $imageUrl;
+        $service->save();
     }
 }

@@ -52,4 +52,9 @@ class Service extends Model
     {
         return $this->belongsTo(ServiceType::class);
     }
+
+    public function images()
+    {
+        return $this->belongsToMany(Image::class, 'service_images')->withTimestamps();
+    }
 }

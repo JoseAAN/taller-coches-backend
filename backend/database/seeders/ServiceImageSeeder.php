@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Image;
 use App\Models\Service;
 
 class ServiceImageSeeder extends Seeder
@@ -25,6 +26,15 @@ class ServiceImageSeeder extends Seeder
 
             if ($service) {
                 $service->update(['image' => $imageName]);
+
+                $image = Image::firstOrCreate(
+                    ['url' => $imageName],
+                    ['is_primary' => true]
+                );
+
+                if (!$service->images()->where('images.id', $image->id)->exists()) {
+                    $service->images()->attach($image->id);
+                }
             }
         }
     }
