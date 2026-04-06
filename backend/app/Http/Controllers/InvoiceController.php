@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\InvoiceCollection;
 use App\Interfaces\CheckInvoiceFormat;
+use App\Models\ItemType;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
@@ -48,9 +49,25 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
     {
         $data = $request->validate([
             'cart_id' => 'required|exists:carts,id',
+            'stripe_session_id' => 'required|string', //la sesion la usaremos para que no se pueda crear una factura sin pagar
         ]);
 
         $data['user_id'] = $request->user()->id;
+
+        try {
+            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+            //verificamos que el id de la sesión sea correcto
+            $session = \Stripe\Checkout\Session::retrieve($data['stripe_session_id']);
+
+            //si no ha pagado correctamente lanzamos el error
+            if ($session->payment_status !== 'paid') {
+                return response()->json(['message' => 'El pago no ha sido completado en Stripe o fue rechazado.'], 402);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Firma de sesión inválida. Acceso ilegal detectado.'], 403);
+        }
+        
+        unset($data['stripe_session_id']);
 
         return DB::transaction(function () use ($data, $request) {
             $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
@@ -107,7 +124,7 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             }
 
             foreach ($cart->items as $item) {
-                if ($item->item_type_id == \App\Models\ItemType::PRODUCT && $item->itemProduct) {
+                if ($item->item_type_id == ItemType::PRODUCT && $item->itemProduct) {
                     $product = $products->get((int) $item->itemProduct->product_id);
                     if ($product) {
                         $product->stock -= $item->quantity;
@@ -220,5 +237,63 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             'valid' => true,
             'message' => ''
         ];
+    }
+
+    /**
+     * Crear una sesión de Stripe Checkout para el carrito
+     */
+    public function createStripeSession(Request $request)
+    {
+        //aqui crearemos la sesion de stripe que este necesita y los datos del carrito para enviarle la info y que se pueda ver
+        $data = $request->validate([
+            'cart_id' => 'required|exists:carts,id',
+        ]);
+
+        $cart = Cart::with(['items.itemProduct.product', 'items.itemAppointment.appointment.service'])->find($data['cart_id']);
+
+        if (!$cart || (int) $cart->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'No tienes permisos para este carrito'], 403);
+        }
+
+        $total = (float) $cart->items->sum('subtotal');
+        if ($total <= 0) {
+            return response()->json(['message' => 'El carrito está vacío'], 422);
+        }
+
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $lineItems = [];
+        foreach ($cart->items as $item) {
+            $name = 'Producto/Servicio';
+            
+            if ($item->item_type_id == ItemType::PRODUCT && $item->itemProduct && $item->itemProduct->product) {
+                 $name = $item->itemProduct->product->name;
+            } elseif ($item->item_type_id == ItemType::SERVICE && $item->itemAppointment && $item->itemAppointment->appointment && $item->itemAppointment->appointment->service) {
+                 $name = $item->itemAppointment->appointment->service->name;
+            }
+
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => [
+                        'name' => $name,
+                    ],
+                    'unit_amount' => (int)round($item->price_at_time * 100),
+                ],
+                'quantity' => $item->quantity,
+            ];
+        }
+
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+        $session = \Stripe\Checkout\Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => $lineItems,
+            'mode' => 'payment',
+            'success_url' => $frontendUrl . '/cart?stripe_success=true&cart_id=' . $cart->id . '&session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => $frontendUrl . '/cart?stripe_cancel=true',
+        ]);
+
+        return response()->json(['url' => $session->url]);
     }
 }

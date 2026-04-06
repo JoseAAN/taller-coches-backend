@@ -70,6 +70,9 @@ Route::middleware(['auth.token'])->prefix('v1')->group(function () {
     Route::get('/invoices/by-cart/{cartId}', [InvoiceController::class, 'getByCart']);
     Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
 
+    // Stripe
+    Route::post('/checkout/stripe', [InvoiceController::class, 'createStripeSession']);
+
     // Carrito del usuario
     Route::get('/user-cart', [CartController::class, 'getCartByUserId']);
     Route::get('/carts/{cart}', [CartController::class, 'show']);
