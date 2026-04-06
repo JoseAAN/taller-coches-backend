@@ -6,6 +6,7 @@ use App\interfaces\Sorter;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Cart;
+use App\Models\Product;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\InvoiceCollection;
 use App\Interfaces\CheckInvoiceFormat;
@@ -65,8 +66,41 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
 
             $data['total'] = $total;
 
+            // Validar stock suficiente al momento de facturar
+            // Solo si todo sigue disponible se crea la factura y se descuenta inventario
+            $stockRequirements = collect($cart->items)
+                ->filter(function ($item) {
+                    return $item->item_type_id == \App\Models\ItemType::PRODUCT
+                        && $item->itemProduct
+                        && $item->itemProduct->product_id;
+                })
+                ->groupBy(function ($item) {
+                    return $item->itemProduct->product_id;
+                })
+                ->map(function ($items) {
+                    return (int) $items->sum('quantity');
+                });
+            // La función lockforupdate() se usa para evitar que se modifique el carrito mientras se realiza la factura
+            $products = collect();
+            if ($stockRequirements->isNotEmpty()) {
+                $products = Product::whereIn('id', $stockRequirements->keys())
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($stockRequirements as $productId => $requiredQuantity) {
+                    $product = $products->get((int) $productId);
+
+                    if (!$product || $product->stock < $requiredQuantity) {
+                        return response()->json([
+                            'message' => 'No hay stock suficiente para completar la compra.',
+                        ], 409);
+                    }
+                }
+            }
+
             $invoice = Invoice::create($data);
-            
+
             $formatCheck = $this->validateInvoiceFormat($invoice->invoice_number);
             if (!$formatCheck['valid']) {
                 throw new \Exception($formatCheck['message']);
@@ -74,9 +108,9 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
 
             foreach ($cart->items as $item) {
                 if ($item->item_type_id == \App\Models\ItemType::PRODUCT && $item->itemProduct) {
-                    $product = $item->itemProduct->product;
+                    $product = $products->get((int) $item->itemProduct->product_id);
                     if ($product) {
-                        $product->stock = max(0, $product->stock - $item->quantity);
+                        $product->stock -= $item->quantity;
                         $product->save();
                     }
                 }
@@ -92,7 +126,7 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
     public function getByCart(Request $request, $cartId)
     {
         $userId = $request->user()->id;
-        
+
         $invoice = Invoice::where('user_id', $userId)
             ->where('cart_id', $cartId)
             ->first();

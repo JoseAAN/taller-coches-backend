@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Service;
+use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -98,6 +99,13 @@ class AppointmentController extends Controller
         ]);
 
         try {
+            $vehicle = Vehicle::findOrFail($request->vehicle_id);
+            if ($this->userCannotAccessVehicle($request, $vehicle)) {
+                return response()->json([
+                    'message' => 'No tienes permiso para reservar citas con este vehiculo',
+                ], 403);
+            }
+
             // Obtenemos la duracion del servicio
             $service = Service::findOrFail($request->service_id);
             $durationMinutes = $service->average_duration;
@@ -130,7 +138,7 @@ class AppointmentController extends Controller
             }
 
             $appointment = Appointment::create([
-                'vehicle_id' => $request->vehicle_id,
+                'vehicle_id' => $vehicle->id,
                 'service_id' => $service->id,
                 'appointment_date' => $start,
                 'end_time' => $end,
@@ -194,10 +202,17 @@ class AppointmentController extends Controller
         try {
 
             $appointment = Appointment::with('vehicle')->findOrFail($appointmentId);
-            
+
             $user = $request->user();
             if ($user->role->name !== 'admin' && $appointment->vehicle->user_id !== $user->id) {
                 return response()->json(['message' => 'No tienes permiso para editar esta cita'], 403);
+            }
+
+            $vehicle = Vehicle::findOrFail($request->vehicle_id);
+            if ($this->userCannotAccessVehicle($request, $vehicle)) {
+                return response()->json([
+                    'message' => 'No tienes permiso para asignar esta cita a este vehiculo',
+                ], 403);
             }
 
             $service = Service::findOrFail($request->service_id);
@@ -217,14 +232,14 @@ class AppointmentController extends Controller
                 ->where('appointment_date', '<', $end)
                 ->where('end_time', '>', $start)
                 ->exists();
-            
+
             if ($exists) {
                 return response()->json(['message' => 'El nuevo horario ya está ocupado'], 409);
             }
 
             // Actualizamos
             $appointment->update([
-                'vehicle_id' => $request->vehicle_id,
+                'vehicle_id' => $vehicle->id,
                 'service_id' => $service->id,
                 'appointment_date' => $start,
                 'end_time' => $end,
@@ -320,5 +335,21 @@ class AppointmentController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error interno al actualizar estado'], 500);
         }
+    }
+
+    // Funcion auxiliar para comprobar si el usuario puede acceder a un vehiculo (es el dueño del vehiculo)
+    private function userCannotAccessVehicle(Request $request, Vehicle $vehicle): bool
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return true;
+        }
+
+        if ($user->role?->name === 'admin') {
+            return false;
+        }
+
+        return (int) $vehicle->user_id !== (int) $user->id;
     }
 }
