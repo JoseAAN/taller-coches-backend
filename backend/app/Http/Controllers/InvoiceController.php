@@ -46,22 +46,24 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
     public function store(Request $request)
     {
         $data = $request->validate([
-            'total' => 'required|numeric',
-            'cart_id' => 'nullable|exists:carts,id',
+            'cart_id' => 'required|exists:carts,id',
         ]);
 
         $data['user_id'] = $request->user()->id;
 
         return DB::transaction(function () use ($data, $request) {
-            $cart = null;
+            $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
 
-            if (isset($data['cart_id'])) {
-                $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
-
-                if (!$cart || (int) $cart->user_id !== (int) $request->user()->id) {
-                    return response()->json(['message' => 'No tienes permisos para facturar este carrito'], 403);
-                }
+            if (!$cart || (int) $cart->user_id !== (int) $request->user()->id) {
+                return response()->json(['message' => 'No tienes permisos para facturar este carrito'], 403);
             }
+
+            $total = (float) $cart->items->sum('subtotal');
+            if ($total <= 0) {
+                return response()->json(['message' => 'No se puede generar una factura para un carrito vacio'], 422);
+            }
+
+            $data['total'] = $total;
 
             $invoice = Invoice::create($data);
             
@@ -70,17 +72,12 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
                 throw new \Exception($formatCheck['message']);
             }
 
-           
-            if ($cart) {
-                if ($cart) {
-                    foreach ($cart->items as $item) {
-                        if ($item->item_type_id == \App\Models\ItemType::PRODUCT && $item->itemProduct) {
-                            $product = $item->itemProduct->product;
-                            if ($product) {
-                                $product->stock = max(0, $product->stock - $item->quantity);
-                                $product->save();
-                            }
-                        }
+            foreach ($cart->items as $item) {
+                if ($item->item_type_id == \App\Models\ItemType::PRODUCT && $item->itemProduct) {
+                    $product = $item->itemProduct->product;
+                    if ($product) {
+                        $product->stock = max(0, $product->stock - $item->quantity);
+                        $product->save();
                     }
                 }
             }
@@ -137,7 +134,6 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
 
         $data = $request->validate([
             'invoice_number' => 'sometimes|string|unique:invoices,invoice_number,' . $id,
-            'total' => 'sometimes|numeric',
         ]);
 
         $invoice = Invoice::find($id);
