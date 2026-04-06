@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Cart;
 use App\Models\Item;
-use App\Models\ItemType;
-use App\Models\ItemProduct;
 use App\Models\ItemAppointment;
+use App\Models\ItemProduct;
+use App\Models\ItemType;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +26,6 @@ class CartItemController extends Controller
             'product_id' => 'required_if:item_type_id,1|exists:products,id',
             'appointment_id' => 'required_if:item_type_id,2|exists:appointments,id',
             'quantity' => 'required|numeric|min:1',
-            'price_at_time' => 'required|numeric',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -38,7 +39,7 @@ class CartItemController extends Controller
             $typeId = $request->item_type_id;
             $targetId = ($typeId == ItemType::PRODUCT) ? $request->product_id : $request->appointment_id;
             $quantity = $request->quantity;
-            $price = $request->price_at_time;
+            $price = $this->resolveItemPrice($request, $typeId, $targetId);
 
             // 1. Crear el Item general
             $item = Item::create([
@@ -144,5 +145,43 @@ class CartItemController extends Controller
         }
 
         return $this->userCannotAccessCart($request, $item->cart);
+    }
+
+    private function resolveItemPrice(Request $request, int $typeId, int $targetId): float
+    {
+        if ($typeId === ItemType::PRODUCT) {
+            return (float) Product::findOrFail($targetId)->price;
+        }
+
+        if ($typeId === ItemType::SERVICE) {
+            $appointment = Appointment::with('vehicle')->findOrFail($targetId);
+
+            if ($this->userCannotAccessAppointment($request, $appointment)) {
+                abort(Response::HTTP_FORBIDDEN, 'No tienes permisos para anadir esta cita al carrito.');
+            }
+
+            return (float) $appointment->final_price;
+        }
+
+        abort(Response::HTTP_UNPROCESSABLE_ENTITY, 'Tipo de item no soportado.');
+    }
+
+    private function userCannotAccessAppointment(Request $request, Appointment $appointment): bool
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return true;
+        }
+
+        if (!$appointment->relationLoaded('vehicle')) {
+            $appointment->load('vehicle');
+        }
+
+        if ($user->role?->name === 'admin') {
+            return false;
+        }
+
+        return (int) $appointment->vehicle?->user_id !== (int) $user->id;
     }
 }
