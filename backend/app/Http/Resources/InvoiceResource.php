@@ -39,12 +39,15 @@ class InvoiceResource extends JsonResource
                             'price'      => $item->price_at_time,
                             'quantity'   => $item->quantity,
                             'subtotal'   => $item->subtotal,
+                            'image_url'  => $product->images->first()?->url,
                         ];
                     }
 
                     // Es una CITA
                     if ($item->itemAppointment && $item->itemAppointment->appointment) {
                         $appointment = $item->itemAppointment->appointment;
+                        $service = $appointment->service;
+                        
                         return [
                             'type'             => 'appointment',
                             'id'               => $appointment->id,
@@ -54,6 +57,7 @@ class InvoiceResource extends JsonResource
                             'price'            => $item->price_at_time,
                             'quantity'         => $item->quantity,
                             'subtotal'         => $item->subtotal,
+                            'image_url'        => $service?->images->first()?->url,
                         ];
                     }
 
