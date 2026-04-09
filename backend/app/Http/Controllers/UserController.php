@@ -45,14 +45,14 @@ class UserController extends Controller
 
         // Generar token manual
         $token = \Illuminate\Support\Str::random(60);
-        $user->forceFill(['api_token' => $token])->save();
+        $user->forceFill(['api_token' => hash('sha256', $token)])->save();
+
+        $cookie = cookie('auth_token', $token, 60 * 24 * 30, null, null, env('APP_ENV') === 'production', true, false, 'Lax');
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
             'user' => $user->load('role'),
-        ], 201);
+        ], 201)->withCookie($cookie);
     }
 
     /**
@@ -192,13 +192,13 @@ class UserController extends Controller
 
     public function checkAccessToken(Request $request)
     {
-        $token = $request->bearerToken();
+        $token = $request->cookie('auth_token') ?? $request->bearerToken();
 
         if (!$token) {
             return response()->json(['message' => 'Token no proporcionado'], 401);
         }
 
-        $user = User::where('api_token', $token)->first();
+        $user = User::where('api_token', hash('sha256', $token))->first();
 
         if (!$user) {
             return response()->json(['message' => 'Token inválido'], 401);

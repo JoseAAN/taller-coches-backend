@@ -17,13 +17,14 @@ class EnsureTokenIsValid
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken() ?? $request->query('token');
+        // Buscar en la cookie, si no hay, intentar con el bearerToken
+        $token = $request->cookie('auth_token') ?? $request->bearerToken() ?? $request->query('token');
 
         if (! $token) {
             return response()->json(['message' => 'Token no proporcionado.'], 401);
         }
 
-        $user = User::where('api_token', $token)->first();
+        $user = User::where('api_token', hash('sha256', $token))->first();
 
         if (! $user) {
             return response()->json(['message' => 'Token inválido.'], 401);

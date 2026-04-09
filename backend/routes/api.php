@@ -135,6 +135,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::delete('/carts/{cart}', [CartController::class, 'destroy']);
 
     // Facturas: Gestion
+    Route::get('/invoices', [InvoiceController::class, 'index']);
     Route::put('/invoices/{id}', [InvoiceController::class, 'update']);
     Route::delete('/invoices/{id}', [InvoiceController::class, 'destroy']);
 
@@ -147,6 +148,7 @@ Route::middleware(['auth.token', 'auth.admin'])->prefix('v1')->group(function ()
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update']);
 
     // Users: Gestion
+    Route::get('/users', [UserController::class, 'index']);
     Route::post('/admin-users', [UserController::class, 'adminStore']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);

@@ -74,17 +74,17 @@ class AuthController extends Controller
         // Login correcto → resetear contadores y generar token
         $token = \Illuminate\Support\Str::random(60);
         $user->forceFill([
-            'api_token'     => $token,
+            'api_token'      => hash('sha256', $token),
             'login_attempts' => 0,
-            'unblock_time'  => null,
+            'unblock_time'   => null,
         ])->save();
 
+        $cookie = cookie('auth_token', $token, 60 * 24 * 30, null, null, env('APP_ENV') === 'production', true, false, 'Lax');
+
         return response()->json([
-            'message'      => 'Login exitoso',
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'user'         => $user->load('role'),
-        ]);
+            'message' => 'Login exitoso',
+            'user'    => $user->load('role'),
+        ])->withCookie($cookie);
     }
 
     public function logout(Request $request)
@@ -95,6 +95,8 @@ class AuthController extends Controller
             $user->forceFill(['api_token' => null])->save();
         }
 
-        return response()->json(['message' => 'Sesión cerrada correctamente']);
+        $cookie = \Illuminate\Support\Facades\Cookie::forget('auth_token');
+
+        return response()->json(['message' => 'Sesión cerrada correctamente'])->withCookie($cookie);
     }
 }
