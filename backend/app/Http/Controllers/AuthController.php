@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Carbon;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -98,5 +100,50 @@ class AuthController extends Controller
         $cookie = \Illuminate\Support\Facades\Cookie::forget('auth_token');
 
         return response()->json(['message' => 'Sesión cerrada correctamente'])->withCookie($cookie);
+    }
+
+    public function redirectGoogle()
+    {
+         return Socialite::driver('google')->stateless()->redirect();
+    }
+
+    public function callbackGoogle()
+    {
+        try {
+            $user_google = Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+             return redirect(trim(env('FRONTEND_URL', 'http://localhost:5173'), '/') . '/login?error=google_auth_failed');
+        }
+
+        $user = User::where('email', $user_google->email)->first();
+
+        if ($user) {
+            // Si el usuario ya existe (por ejemplo, el admin u otro cliente que se registró a mano),
+            // solo le ponemos el google_id pero NO tocamos su rol_id para respetarlo.
+            if (!$user->google_id) {
+                $user->update(['google_id' => $user_google->id]);
+            }
+        } else {
+            // Si es un usuario nuevo, lo creamos con el rol de cliente (2)
+            $user = User::create([
+                'email'     => $user_google->email,
+                'name'      => $user_google->name,
+                'google_id' => $user_google->id,
+                'role_id'   => 2, 
+            ]);
+        }
+
+        // Generamos el token de la misma forma que en el método login() para la API
+        $token = \Illuminate\Support\Str::random(60);
+        $user->forceFill([
+            'api_token'      => hash('sha256', $token),
+            'login_attempts' => 0,
+            'unblock_time'   => null,
+        ])->save();
+
+        $cookie = cookie('auth_token', $token, 60 * 24 * 30, null, null, env('APP_ENV') === 'production', true, false, 'Lax');
+
+        // Redirigimos al frontend solo con la Cookie (HttpOnly) por seguridad, manteniendo la URL completamente limpia
+        return redirect(trim(env('FRONTEND_URL', 'http://localhost:5173'), '/') . '/login?google=success')->withCookie($cookie);
     }
 }

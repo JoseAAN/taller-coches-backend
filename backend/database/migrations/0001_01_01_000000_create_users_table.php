@@ -36,8 +36,9 @@ return new class extends Migration
             $table->timestamp('unblock_time')->nullable(); 
 
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->string('api_token', 80)->nullable()->unique();
+            $table->string('google_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

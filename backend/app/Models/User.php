@@ -52,6 +52,7 @@ class User extends Authenticatable
         'blocked',
         'login_attempts',
         'unblock_time',
+        'google_id',
     ];
 
     // Relación con Rol

@@ -17,6 +17,10 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\vehicleTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Socialite;
+
+Route::get('/google-auth/redirect', [AuthController::class, 'redirectGoogle']);
+Route::get('/google-auth/callback', [AuthController::class, 'callbackGoogle']);
 
 // Rutas Publicas
 Route::post('/login', [AuthController::class, 'login']);
