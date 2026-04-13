@@ -53,6 +53,26 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
         ]);
 
         $data['user_id'] = $request->user()->id;
+        $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
+
+        if (!$cart || (int) $cart->user_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'No tienes permisos para facturar este carrito'], 403);
+        }
+
+        $total = (float) $cart->items->sum('subtotal');
+        if ($total <= 0) {
+            return response()->json(['message' => 'No se puede generar una factura para un carrito vacio'], 422);
+        }
+
+        $existingInvoiceBySession = Invoice::where('stripe_session_id', $data['stripe_session_id'])->first();
+        if ($existingInvoiceBySession) {
+            return new InvoiceResource($existingInvoiceBySession);
+        }
+
+        $existingInvoiceByCart = Invoice::where('cart_id', $cart->id)->first();
+        if ($existingInvoiceByCart) {
+            return new InvoiceResource($existingInvoiceByCart);
+        }
 
         try {
             \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
@@ -63,11 +83,22 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             if ($session->payment_status !== 'paid') {
                 return response()->json(['message' => 'El pago no ha sido completado en Stripe o fue rechazado.'], 402);
             }
+
+            $sessionCartId = (string) ($session->metadata->cart_id ?? '');
+            $sessionUserId = (string) ($session->metadata->user_id ?? '');
+            $sessionTotal = (int) ($session->metadata->cart_total_cents ?? 0);
+            $expectedTotal = (int) round($total * 100);
+
+            if (
+                $sessionCartId !== (string) $cart->id ||
+                $sessionUserId !== (string) $request->user()->id ||
+                $sessionTotal !== $expectedTotal
+            ) {
+                return response()->json(['message' => 'La sesión de Stripe no coincide con el carrito o el usuario autenticado.'], 403);
+            }
         } catch (\Exception $e) {
             return response()->json(['message' => 'Firma de sesión inválida. Acceso ilegal detectado.'], 403);
         }
-        
-        unset($data['stripe_session_id']);
 
         return DB::transaction(function () use ($data, $request) {
             $cart = Cart::with('items.itemProduct.product')->find($data['cart_id']);
@@ -82,6 +113,16 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             }
 
             $data['total'] = $total;
+
+            $existingInvoiceBySession = Invoice::where('stripe_session_id', $data['stripe_session_id'])->lockForUpdate()->first();
+            if ($existingInvoiceBySession) {
+                return new InvoiceResource($existingInvoiceBySession);
+            }
+
+            $existingInvoiceByCart = Invoice::where('cart_id', $cart->id)->lockForUpdate()->first();
+            if ($existingInvoiceByCart) {
+                return new InvoiceResource($existingInvoiceByCart);
+            }
 
             // Validar stock suficiente al momento de facturar
             // Solo si todo sigue disponible se crea la factura y se descuenta inventario
@@ -290,6 +331,12 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             'payment_method_types' => ['card'],
             'line_items' => $lineItems,
             'mode' => 'payment',
+            'client_reference_id' => (string) $cart->id,
+            'metadata' => [
+                'cart_id' => (string) $cart->id,
+                'user_id' => (string) $request->user()->id,
+                'cart_total_cents' => (string) ((int) round($total * 100)),
+            ],
             'success_url' => $frontendUrl . '/cart?stripe_success=true&cart_id=' . $cart->id . '&session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $frontendUrl . '/cart?stripe_cancel=true',
         ]);

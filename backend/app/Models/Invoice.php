@@ -21,6 +21,7 @@ class Invoice extends Model
         'total',
         'cart_id',
         'user_id',
+        'stripe_session_id',
     ];
 
     public function cart()
