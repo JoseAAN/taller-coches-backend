@@ -49,6 +49,11 @@ class Product extends Model
         return $this->belongsToMany(Image::class, 'product_images')->withTimestamps();
     }
 
+    public function items()
+    {
+        return $this->belongsToMany(Item::class, 'item_products');
+    }
+
 
 
 }

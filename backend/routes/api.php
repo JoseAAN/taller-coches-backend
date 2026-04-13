@@ -8,6 +8,7 @@ use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MailTestController;
+use App\Http\Controllers\ProductStatsController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -41,6 +42,7 @@ Route::middleware(['auth.token'])->group(function () {
 Route::prefix('v1')->group(function () {
     // Productos: Lectura publica
     Route::get('/products', [ProductsController::class, 'index']);
+    Route::get('/products/best-sellers', [ProductStatsController::class, 'getBestSellers']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
     Route::post('/products/{id}/restock-subscribe', [ProductsController::class, 'subscribeToRestock']);
 
