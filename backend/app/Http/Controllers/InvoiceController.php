@@ -325,7 +325,12 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             ];
         }
 
-        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        // esto es para que funcione con la url de frontend, así tampoco debería de romper en producción
+        $origin = $request->header('origin');
+        $frontendUrlConfig = env('FRONTEND_URL', 'http://localhost:5173');
+        $validUrls = array_map('trim', explode(',', $frontendUrlConfig));
+        
+        $frontendUrl = in_array($origin, $validUrls) ? $origin : $validUrls[0];
 
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
