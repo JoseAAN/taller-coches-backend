@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\interfaces\Sorter;
+use App\Interfaces\Sorter;
 use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\Cart;
