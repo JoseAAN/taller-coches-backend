@@ -44,6 +44,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/products', [ProductsController::class, 'index']);
     Route::get('/products/best-sellers', [ProductStatsController::class, 'getBestSellers']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
+    Route::get('/products/{id}/related', [ProductStatsController::class, 'getRelatedProducts']);
     Route::post('/products/{id}/restock-subscribe', [ProductsController::class, 'subscribeToRestock']);
 
     // Categorias: Lectura publica

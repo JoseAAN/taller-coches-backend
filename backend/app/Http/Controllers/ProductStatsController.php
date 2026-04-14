@@ -29,4 +29,27 @@ class ProductStatsController extends Controller
 
         return response()->json($bestSellers);
     }
+
+    /**
+     * Obtiene productos relacionados en base a las categorías del producto especificado.
+     */
+    public function getRelatedProducts($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $categoryIds = $product->categories()->pluck('categories.id');
+
+        $relatedProducts = Product::with(['images', 'categories'])
+            ->whereHas('categories', function ($query) use ($categoryIds) {
+                $query->whereIn('categories.id', $categoryIds);
+            })
+            ->where('id', '!=', $id)
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $relatedProducts
+        ]);
+    }
 }

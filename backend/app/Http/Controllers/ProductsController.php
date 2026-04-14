@@ -40,6 +40,17 @@ class ProductsController extends Controller
             $bindings[] = $request->category_id;
         }
 
+        // Filtros de precios 
+        if ($request->has('min_price')) {
+            $whereClauses[] = "p.price >= ?";
+            $bindings[] = $request->min_price;
+        }
+
+        if ($request->has('max_price')) {
+            $whereClauses[] = "p.price <= ?";
+            $bindings[] = $request->max_price;
+        }
+
         // Filtro por búsqueda de texto (nombre o descripción)
         if ($request->has('search')) {
             $whereClauses[] = "(p.name LIKE ? OR p.description LIKE ?)";
