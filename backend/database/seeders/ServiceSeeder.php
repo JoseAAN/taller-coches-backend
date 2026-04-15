@@ -25,6 +25,7 @@ class ServiceSeeder extends Seeder
             'average_duration' => 30, // minutos
             'image' => 'services/lavado-basico.jpg',
             'service_type_id' => $exterior->id,
+            'show_on_home' => true,
         ]);
 
         Service::create([
@@ -33,6 +34,7 @@ class ServiceSeeder extends Seeder
             'price' => 35.50,
             'average_duration' => 60,
             'service_type_id' => $exterior->id,
+            'show_on_home' => true,
         ]);
 
         // --- Interior ---
@@ -42,6 +44,7 @@ class ServiceSeeder extends Seeder
             'price' => 20.00,
             'average_duration' => 45,
             'service_type_id' => $interior->id,
+            'show_on_home' => true,
         ]);
 
         Service::create([
