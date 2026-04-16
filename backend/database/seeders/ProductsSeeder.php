@@ -107,6 +107,22 @@ class ProductsSeeder extends Seeder
                 'category' => 'Motor',
                 'image_url' => 'Correa_distribucion.png',
             ],
+            [
+                'name' => 'Toalla de Secado Microfibra Premium',
+                'description' => 'Toalla super absorbente de 1200 GSM para secar todo el coche sin dejar marcas ni microarañazos.',
+                'price' => 15.99,
+                'stock' => 50,
+                'category' => 'Limpieza',
+                'image_url' => 'Toalla_microfibra.png',
+            ],
+            [
+                'name' => 'Batería de Arranque 12V 74Ah',
+                'description' => 'Batería sin mantenimiento con alta potencia de arranque en frío. Larga vida útil y máxima fiabilidad.',
+                'price' => 85.50,
+                'stock' => 8,
+                'category' => 'Motor',
+                'image_url' => 'Bateria_12v.png',
+            ],
         ];
 
         foreach ($products as $data) {

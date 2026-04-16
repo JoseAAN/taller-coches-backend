@@ -28,7 +28,25 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Crear 9 Usuarios CLIENTE de prueba
-        User::factory(9)->create(['role_id' => $clientRole->id]);
+        $realClients = [
+            ['name' => 'Carlos López', 'email' => 'carlos@ejemplo.com', 'password' => bcrypt('client1234')],
+            ['name' => 'Laura Martínez', 'email' => 'laura@ejemplo.com', 'password' => bcrypt('client1234')],
+            ['name' => 'Javier Sánchez', 'email' => 'javier.sanchez@ejemplo.com', 'password' => bcrypt('client1234')],
+            ['name' => 'Marta Gómez', 'email' => 'marta.detailing@ejemplo.com', 'password' => bcrypt('client1234')],
+            ['name' => 'Pedro (Taxista)', 'email' => 'pedro.taxi@ejemplo.com', 'password' => bcrypt('client1234')],
+            ['name' => 'Ana Ruiz', 'email' => 'ana.ruiz@ejemplo.com', 'password' => bcrypt('client1234')],
+            ['name' => 'Flotas Paco S.L.', 'email' => 'info@flotaspaco.com', 'password' => bcrypt('1234')],
+        ];
+
+        foreach ($realClients as $client) {
+            User::firstOrCreate(
+                ['email' => $client['email']],
+                [
+                    'name' => $client['name'],
+                    'password' => $client['password'],
+                    'role_id' => $clientRole->id,
+                ]
+            );
+        }
     }
 }
