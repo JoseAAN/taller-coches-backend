@@ -54,6 +54,10 @@ Route::prefix('v1')->group(function () {
     // Registro de usuarios
     Route::post('/users', [UserController::class, 'store']);
 
+    // Verificación de email
+    Route::post('/verify-email', [UserController::class, 'checkEmailVerificationCode']);
+    Route::post('/resend-verification', [UserController::class, 'resendVerificationCode'])->middleware('throttle:3,1');
+
     // Servicios: Lectura publica
     Route::get('/services/services-home', [ServiceController::class, 'getHomeServices']);
     Route::get('/services', [ServiceController::class, 'index']);

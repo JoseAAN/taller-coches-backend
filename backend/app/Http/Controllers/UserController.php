@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\StoreClienteRequest;
+use App\Mail\VerificationCodeMail;
 
 class UserController extends Controller
 {
@@ -35,7 +37,9 @@ class UserController extends Controller
         $clientRole = \App\Models\Role::where('name', 'client')->first();
         if ($clientRole) {
             $userData['role_id'] = $clientRole->id;
-        }
+        } 
+
+
 
         // Hashear contraseña
         $userData['password'] = Hash::make($userData['password']);
@@ -47,8 +51,15 @@ class UserController extends Controller
         $token = \Illuminate\Support\Str::random(60);
         $user->forceFill(['api_token' => hash('sha256', $token)])->save();
 
-        $cookie = cookie('auth_token', $token, 60 * 24 * 30, null, null, env('APP_ENV') === 'production', true, false, 'Lax');
+        // Generar código de verificación numérico de 6 dígitos
+        $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->forceFill(['email_verification_code' => $verificationCode])->save();
 
+        // Enviar email con el código
+        Mail::to($user->email)->send(new VerificationCodeMail($verificationCode, $user->name));
+
+        $cookie = cookie('auth_token', $token, 60 * 24 * 30, null, null, env('APP_ENV') === 'production', true, false, 'Lax');
+        
         return response()->json([
             'message' => 'Usuario registrado exitosamente',
             'user' => $user->load('role'),
@@ -209,4 +220,61 @@ class UserController extends Controller
             'user' => $user->load('role'),
         ]);
     }
+
+    public function checkEmailVerificationCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Este email ya está verificado.'], 400);
+        }
+
+        if ($user->email_verification_code !== $request->code) {
+            return response()->json(['message' => 'Código incorrecto. Revisa tu email e inténtalo de nuevo.'], 422);
+        }
+
+        $user->email_verified_at = now();
+        $user->email_verification_code = null;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Email verificado correctamente.',
+            'user' => $user->load('role'),
+        ]);
+    }
+
+    public function resendVerificationCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado.'], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Este email ya está verificado.'], 400);
+        }
+
+        $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $user->email_verification_code = $verificationCode;
+        $user->save();
+
+        Mail::to($user->email)->send(new VerificationCodeMail($verificationCode, $user->name));
+
+        return response()->json(['message' => 'Código reenviado correctamente.']);
+    }
 }
+

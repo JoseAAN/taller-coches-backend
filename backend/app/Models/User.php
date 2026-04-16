@@ -53,6 +53,8 @@ class User extends Authenticatable
         'login_attempts',
         'unblock_time',
         'google_id',
+        'email_verification_code',
+        'email_verified_at',
     ];
 
     // Relación con Rol
