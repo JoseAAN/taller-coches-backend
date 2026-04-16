@@ -97,7 +97,7 @@ class ProductsController extends Controller
             // 2A. LÓGICA DE CATEGORÍAS (Tu código súper optimizado)
             // ---------------------------------------------------------
             $categoriesRelations = DB::select(
-                "SELECT pc.product_id, c.name
+                "SELECT pc.product_id, c.id, c.name
                  FROM categories c
                  INNER JOIN products_categories pc ON c.id = pc.category_id
                  WHERE pc.product_id IN ($placeholders)",
@@ -106,7 +106,10 @@ class ProductsController extends Controller
 
             $categoriesByProduct = [];
             foreach ($categoriesRelations as $row) {
-                $categoriesByProduct[$row->product_id][] = $row->name;
+                $categoriesByProduct[$row->product_id][] = [
+                    'id' => $row->id,
+                    'name' => $row->name
+                ];
             }
 
             // ---------------------------------------------------------
@@ -171,13 +174,18 @@ class ProductsController extends Controller
 
         // Obtener categorías del producto mediante JOIN
         $categories = DB::select(
-            "SELECT c.name
+            "SELECT c.id, c.name
              FROM categories c
              INNER JOIN products_categories pc ON c.id = pc.category_id
              WHERE pc.product_id = ?",
             [$product->id]
         );
-        $product->categories = array_map(fn($cat) => $cat->name, $categories);
+        $product->categories = array_map(function($cat) {
+            return [
+                'id' => $cat->id,
+                'name' => $cat->name
+            ];
+        }, $categories);
 
         // --- NUEVO: Obtener imágenes del producto mediante JOIN ---
         $images = DB::select(
