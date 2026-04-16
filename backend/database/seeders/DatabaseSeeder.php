@@ -17,26 +17,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear Roles
-        // Usamos firstOrCreate para evitar errores si se corre varias veces
         $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin']);
         $clientRole = \App\Models\Role::firstOrCreate(['name' => 'client']);
 
-        // Crear Usuario ADMIN
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@admin.com',
-            'password' => bcrypt('admin1234'),
-            'role_id' => $adminRole->id, // Asignar ID
-        ]);
-
-        // Crear 9 Usuarios CLIENTE (podemos crear más si queremos)
-        User::factory(9)->create([
-            'password' => bcrypt('client1234'),
-            'role_id' => $clientRole->id, // Asignar ID
-        ]);
-
         $this->call([
+            UserSeeder::class,  
             ItemTypeSeeder::class,
             CategoriesSeeder::class,
             ProductsSeeder::class,

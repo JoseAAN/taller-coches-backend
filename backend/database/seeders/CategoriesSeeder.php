@@ -19,8 +19,5 @@ class CategoriesSeeder extends Seeder
         foreach ($categories as $categoryName) {
             Category::firstOrCreate(['name' => $categoryName]);
         }
-
-        // Categorías aleatorias extra
-        Category::factory()->count(5)->create();
     }
 }
