@@ -39,6 +39,21 @@ class CartItemController extends Controller
             $typeId = $request->item_type_id;
             $targetId = ($typeId == ItemType::PRODUCT) ? $request->product_id : $request->appointment_id;
             $quantity = $request->quantity;
+
+            if ($typeId == ItemType::PRODUCT) {
+                $product = Product::findOrFail($targetId);
+                
+                $existingQuantity = Item::where('cart_id', $cartId)
+                    ->where('item_type_id', ItemType::PRODUCT)
+                    ->whereHas('itemProduct', function ($q) use ($targetId) {
+                        $q->where('product_id', $targetId);
+                    })->sum('quantity');
+
+                if (($existingQuantity + $quantity) > $product->stock) {
+                    return response()->json(['message' => 'No hay suficiente stock para este producto.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+                }
+            }
+
             $price = $this->resolveItemPrice($request, $typeId, $targetId);
 
             // 1. Crear el Item general
@@ -83,6 +98,21 @@ class CartItemController extends Controller
 
         if ($this->userCannotAccessItem($request, $item)) {
             return response()->json(['message' => 'No tienes permisos para modificar este item.'], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($item->item_type_id == ItemType::PRODUCT) {
+            $product = $item->itemProduct->product;
+            
+            $existingQuantity = Item::where('cart_id', $item->cart_id)
+                ->where('item_type_id', ItemType::PRODUCT)
+                ->where('id', '!=', $item->id)
+                ->whereHas('itemProduct', function ($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })->sum('quantity');
+
+            if (($existingQuantity + $request->quantity) > $product->stock) {
+                return response()->json(['message' => 'No hay suficiente stock para este producto.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
         }
 
         $item->quantity = $request->quantity;
