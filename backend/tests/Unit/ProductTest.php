@@ -43,15 +43,15 @@ class ProductTest extends TestCase
     }
 
     /**
-     * Test 3: Verificar que existe la relación con carritos (belongsToMany).
+     * Test 3: Verificar que existe la relación con items (belongsToMany).
      */
-    public function test_product_has_carts_relationship(): void
+    public function test_product_has_items_relationship(): void
     {
         $product = new Product();
 
         $this->assertInstanceOf(
             \Illuminate\Database\Eloquent\Relations\BelongsToMany::class,
-            $product->carts()
+            $product->items()
         );
     }
 }

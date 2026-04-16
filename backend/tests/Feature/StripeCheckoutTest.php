@@ -24,6 +24,7 @@ class StripeCheckoutTest extends TestCase
         parent::tearDown();
     }
 
+    // Test 1: La creación de una factura rechaza una sesión de pago de otro carrito o usuario
     public function test_invoice_creation_rejects_paid_session_from_another_cart_or_user(): void
     {
         [$user, $rawToken, $cart] = $this->createAuthenticatedCartScenario();
@@ -61,6 +62,7 @@ class StripeCheckoutTest extends TestCase
         $this->assertDatabaseCount('invoices', 0);
     }
 
+    // Test 2: La creación de una factura es idempotente (no se puede crear dos veces) para la misma sesión de Stripe
     public function test_invoice_creation_is_idempotent_for_same_stripe_session(): void
     {
         [$user, $rawToken, $cart] = $this->createAuthenticatedCartScenario();
@@ -87,6 +89,7 @@ class StripeCheckoutTest extends TestCase
         $this->assertSame(5, Product::first()->stock);
     }
 
+    // Función auxiliar para crear un carrito autenticado
     private function createAuthenticatedCartScenario(): array
     {
         $clientRole = Role::create(['name' => 'client']);

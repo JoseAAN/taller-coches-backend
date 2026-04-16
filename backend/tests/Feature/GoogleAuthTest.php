@@ -84,6 +84,7 @@ class GoogleAuthTest extends TestCase
         $response->assertRedirect('http://localhost:5173/login?error=google_account_mismatch');
         $this->assertNull($user->fresh()->api_token);
     }
+    
     // Test 4: Google callback autentica a un usuario existente con un ID de Google igual
     public function test_google_callback_creates_new_users_with_client_role_by_name(): void
     {

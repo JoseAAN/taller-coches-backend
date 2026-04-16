@@ -73,7 +73,7 @@ class SecurityPhaseTwoTest extends TestCase
             ->assertJsonPath('message', 'Token no proporcionado.');
     }
 
-    // Helper function to create a user with a specific role
+    // Función auxiliar para crear un usuario con un rol específico y un token
     private function createUserWithRole(string $roleName, string $email, string $token): User
     {
         $role = Role::firstOrCreate(['name' => $roleName]);
@@ -83,11 +83,11 @@ class SecurityPhaseTwoTest extends TestCase
             'email' => $email,
             'password' => bcrypt('password'),
             'role_id' => $role->id,
-            'api_token' => $token,
+            'api_token' => hash('sha256', $token),
         ]);
     }
 
-    // Helper function to seed item types
+    // Función auxiliar para sembrar tipos de items
     private function seedItemTypes(): void
     {
         DB::table('item_types')->insertOrIgnore([

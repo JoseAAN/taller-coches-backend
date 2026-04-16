@@ -28,7 +28,7 @@ class ProductCrudTest extends TestCase
             'email' => 'admin@test.com',
             'password' => bcrypt('password'),
             'role_id' => $role->id,
-            'api_token' => 'admin-test-token-123',
+            'api_token' => hash('sha256', 'admin-test-token-123'),
         ]);
         return $user;
     }
@@ -45,7 +45,7 @@ class ProductCrudTest extends TestCase
             'email' => 'client@test.com',
             'password' => bcrypt('password'),
             'role_id' => $role->id,
-            'api_token' => 'client-test-token-456',
+            'api_token' => hash('sha256', 'client-test-token-456'),
         ]);
         return $user;
     }
@@ -76,9 +76,6 @@ class ProductCrudTest extends TestCase
         return (int) DB::getPdo()->lastInsertId();
     }
 
-    // ========================================
-    // Tests de INDEX (GET /api/v1/products)
-    // ========================================
 
     /**
      * Test 1: Listar productos devuelve 200 y datos.
@@ -136,10 +133,6 @@ class ProductCrudTest extends TestCase
                  ->assertJsonPath('meta.total', 1);
     }
 
-    // ========================================
-    // Tests de SHOW (GET /api/v1/products/{id})
-    // ========================================
-
     /**
      * Test 4: Ver producto existente devuelve 200.
      */
@@ -164,10 +157,6 @@ class ProductCrudTest extends TestCase
         $response->assertStatus(404)
                  ->assertJsonPath('message', 'Producto no encontrado');
     }
-
-    // ========================================
-    // Tests de STORE (POST /api/v1/products)
-    // ========================================
 
     /**
      * Test 6: Crear producto como admin devuelve 200.
@@ -217,15 +206,10 @@ class ProductCrudTest extends TestCase
         $response = $this->withHeaders([
             'Authorization' => 'Bearer admin-test-token-123',
         ])->postJson('/api/v1/products', [
-            // Falta 'name' (required), 'price' (required), 'stock' (required)
         ]);
 
         $response->assertStatus(422);
     }
-
-    // ========================================
-    // Tests de UPDATE (PUT /api/v1/products/{id})
-    // ========================================
 
     /**
      * Test 9: Actualizar producto como admin devuelve 200.
@@ -266,10 +250,6 @@ class ProductCrudTest extends TestCase
 
         $response->assertStatus(404);
     }
-
-    // ========================================
-    // Tests de DESTROY (DELETE /api/v1/products/{id})
-    // ========================================
 
     /**
      * Test 11: Eliminar producto como admin devuelve 200.
