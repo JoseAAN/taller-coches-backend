@@ -296,6 +296,10 @@ class InvoiceController extends Controller implements Sorter, CheckInvoiceFormat
             return response()->json(['message' => 'No tienes permisos para este carrito'], 403);
         }
 
+        if (is_null($request->user()->email_verified_at)) {
+            return response()->json(['message' => 'Debes verificar tu email antes de poder procesar pagos.'], 403);
+        }
+
         $total = (float) $cart->items->sum('subtotal');
         if ($total <= 0) {
             return response()->json(['message' => 'El carrito está vacío'], 422);

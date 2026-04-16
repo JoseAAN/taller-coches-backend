@@ -45,7 +45,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/products/best-sellers', [ProductStatsController::class, 'getBestSellers']);
     Route::get('/products/{id}', [ProductsController::class, 'show']);
     Route::get('/products/{id}/related', [ProductStatsController::class, 'getRelatedProducts']);
-    Route::post('/products/{id}/restock-subscribe', [ProductsController::class, 'subscribeToRestock']);
+    Route::post('/products/{id}/restock-subscribe', [ProductsController::class, 'subscribeToRestock'])->middleware('throttle:5,1');
 
     // Categorias: Lectura publica
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -55,7 +55,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/users', [UserController::class, 'store']);
 
     // Verificación de email
-    Route::post('/verify-email', [UserController::class, 'checkEmailVerificationCode']);
+    Route::post('/verify-email', [UserController::class, 'checkEmailVerificationCode'])->middleware('throttle:5,1');
     Route::post('/resend-verification', [UserController::class, 'resendVerificationCode'])->middleware('throttle:3,1');
 
     // Servicios: Lectura publica
