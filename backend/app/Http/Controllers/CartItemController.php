@@ -43,14 +43,26 @@ class CartItemController extends Controller
             if ($typeId == ItemType::PRODUCT) {
                 $product = Product::findOrFail($targetId);
                 
-                $existingQuantity = Item::where('cart_id', $cartId)
+                $existingItem = Item::where('cart_id', $cartId)
                     ->where('item_type_id', ItemType::PRODUCT)
                     ->whereHas('itemProduct', function ($q) use ($targetId) {
                         $q->where('product_id', $targetId);
-                    })->sum('quantity');
+                    })->first();
+
+                $existingQuantity = $existingItem ? $existingItem->quantity : 0;
 
                 if (($existingQuantity + $quantity) > $product->stock) {
                     return response()->json(['message' => 'No hay suficiente stock para este producto.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+                }
+
+                if ($existingItem) {
+                    $existingItem->quantity += $quantity;
+                    $existingItem->subtotal = $existingItem->quantity * $existingItem->price_at_time;
+                    $existingItem->save();
+                    
+                    $this->updateCartTotal($cartId);
+                    
+                    return response()->json($existingItem->load(['itemProduct', 'itemAppointment']), 200);
                 }
             }
 
