@@ -35,7 +35,7 @@ class InvoiceResource extends JsonResource
                             'type'       => 'product',
                             'id'         => $product->id,
                             'name'       => $product->name,
-                            'categories' => $product->categories->pluck('name'),
+                            'categories' => $product->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]),
                             'price'      => $item->price_at_time,
                             'quantity'   => $item->quantity,
                             'subtotal'   => $item->subtotal,
