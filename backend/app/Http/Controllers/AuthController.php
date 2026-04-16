@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
@@ -16,6 +17,7 @@ use Laravel\Socialite\Facades\Socialite;
 class AuthController extends Controller
 {
     const MAX_ATTEMPTS = 5;
+    const MAX_ATTEMPTS_IP = 10;
     const LOCKOUT_MINUTES = 15;
     const GOOGLE_STATE_COOKIE = 'google_oauth_state';
 
@@ -26,10 +28,25 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        $ipKey = 'login_attempts:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($ipKey, self::MAX_ATTEMPTS_IP)) {
+            $secondsRestantes = RateLimiter::availableIn($ipKey);
+            $minutosRestantes = (int) ceil($secondsRestantes / 60);
+            
+            return response()->json([
+                'message'  => "Demasiados intentos de acceso sospechosos. Por seguridad, esta IP ha sido temporalmente bloqueada. Vuelve a intentarlo en {$minutosRestantes} minuto(s).",
+                'code'     => 'TOO_MANY_ATTEMPTS_IP',
+                'retry_in' => $minutosRestantes,
+            ], 429);
+        }
+
         $user = User::where('email', $request->email)->first();
 
         // Usuario no encontrado → error genérico
         if (!$user) {
+            RateLimiter::hit($ipKey, self::LOCKOUT_MINUTES * 60);
+            
             throw ValidationException::withMessages([
                 'email' => ['Las credenciales son incorrectas.'],
             ]);
@@ -55,6 +72,8 @@ class AuthController extends Controller
 
         // Contraseña incorrecta
         if (!Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($ipKey, self::LOCKOUT_MINUTES * 60);
+            
             $user->login_attempts += 1;
 
             if ($user->login_attempts >= self::MAX_ATTEMPTS) {
@@ -78,6 +97,8 @@ class AuthController extends Controller
         }
 
         // Login correcto → resetear contadores y generar token
+        RateLimiter::clear($ipKey);
+        
         $token = \Illuminate\Support\Str::random(60);
         $user->forceFill([
             'api_token'      => hash('sha256', $token),
